@@ -424,6 +424,10 @@ class DatabaseService {
     return this.state.users || [];
   }
 
+  getCurrentUser(): { id: string, name: string, role: UserRole } {
+    return this.state.currentUser;
+  }
+
   validateUser(email: string, password: string): User | undefined {
     return this.state.users?.find(u => u.email === email && u.password === password && u.status === 'ACTIVE');
   }

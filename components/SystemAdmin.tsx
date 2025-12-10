@@ -42,6 +42,10 @@ const UserManagement: React.FC = () => {
   const [passwordModalUser, setPasswordModalUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // RBAC Check
+  const currentUser = db.getCurrentUser();
+  const isAdmin = currentUser.role === UserRole.ADMIN;
+
   const refreshUsers = () => {
     setUsers(db.getUsers());
   };
@@ -51,6 +55,8 @@ const UserManagement: React.FC = () => {
   }, []);
 
   const toggleStatus = (user: User) => {
+    // Double check logic, though UI should prevent it
+    if (!isAdmin) return;
     const newStatus = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     db.updateUserStatus(user.id, newStatus);
     refreshUsers();
@@ -75,12 +81,14 @@ const UserManagement: React.FC = () => {
                onChange={(e) => setSearchTerm(e.target.value)}
              />
           </div>
-          <button 
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-sm font-medium"
-          >
-             <Plus size={16} /> Add User
-          </button>
+          {isAdmin && (
+            <button 
+                onClick={() => setShowAddModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-sm font-medium"
+            >
+                <Plus size={16} /> Add User
+            </button>
+          )}
        </div>
 
        <div className="flex-1 overflow-auto">
@@ -122,24 +130,30 @@ const UserManagement: React.FC = () => {
                        {user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never'}
                     </td>
                     <td className="p-4 text-right">
-                       <div className="flex justify-end gap-2">
-                           <button 
-                             onClick={() => setPasswordModalUser(user)}
-                             className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900 dark:hover:text-blue-400 transition-colors"
-                             title="Change Password"
-                           >
-                              <Key size={18} />
-                           </button>
-                           <button 
-                             onClick={() => toggleStatus(user)}
-                             className={`p-2 rounded-lg transition-colors ${
-                                user.status === 'ACTIVE' ? 'text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900 dark:hover:text-red-400' : 'text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900 dark:hover:text-emerald-400'
-                             }`}
-                             title={user.status === 'ACTIVE' ? 'Deactivate User' : 'Activate User'}
-                           >
-                              {user.status === 'ACTIVE' ? <UserX size={18} /> : <UserCheck size={18} />}
-                           </button>
-                       </div>
+                       {isAdmin ? (
+                           <div className="flex justify-end gap-2">
+                                <button 
+                                    onClick={() => setPasswordModalUser(user)}
+                                    className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900 dark:hover:text-blue-400 transition-colors"
+                                    title="Change Password"
+                                >
+                                    <Key size={18} />
+                                </button>
+                                <button 
+                                    onClick={() => toggleStatus(user)}
+                                    className={`p-2 rounded-lg transition-colors ${
+                                        user.status === 'ACTIVE' ? 'text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900 dark:hover:text-red-400' : 'text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900 dark:hover:text-emerald-400'
+                                    }`}
+                                    title={user.status === 'ACTIVE' ? 'Deactivate User' : 'Activate User'}
+                                >
+                                    {user.status === 'ACTIVE' ? <UserX size={18} /> : <UserCheck size={18} />}
+                                </button>
+                            </div>
+                       ) : (
+                           <span className="text-xs text-slate-400 italic flex items-center justify-end gap-1">
+                               <Lock size={12} /> Read Only
+                           </span>
+                       )}
                     </td>
                  </tr>
                ))}
