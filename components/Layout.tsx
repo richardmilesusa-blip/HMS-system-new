@@ -1,11 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ViewState, User } from '../types';
 import { hasAccess } from '../utils/permissions';
+import { db } from '../services/database';
 import { 
   LayoutDashboard, Users, Calendar, Pill, 
   Stethoscope, Settings, Bell, Search, Menu, LogOut,
-  Hexagon, BedDouble, X, Lock
+  Hexagon, BedDouble, X, Info, AlertTriangle, CheckCircle, Trash2
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -44,6 +45,9 @@ const NavItem = ({ view, label, icon: Icon, active, onClick, collapsed }: any) =
 export const Layout: React.FC<LayoutProps> = ({ currentView, onNavigate, onLogout, currentUser, children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<Array<{id: string, message: string, type: 'info'|'warning'|'error', read: boolean}>>([]);
+  const notifRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -56,6 +60,36 @@ export const Layout: React.FC<LayoutProps> = ({ currentView, onNavigate, onLogou
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Click outside to close notifications
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Poll for notifications
+  useEffect(() => {
+    const fetchNotifs = () => setNotifications(db.getNotifications());
+    fetchNotifs();
+    const interval = setInterval(fetchNotifs, 10000); // Check every 10s
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleDismiss = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    db.dismissNotification(id);
+    setNotifications(db.getNotifications());
+  };
+
+  const handleClearAll = () => {
+    db.clearAllNotifications();
+    setNotifications([]);
+  };
 
   // Helper to render nav item only if user has access
   const RenderNavItem = (props: { view: ViewState, label: string, icon: any }) => {
@@ -149,10 +183,65 @@ export const Layout: React.FC<LayoutProps> = ({ currentView, onNavigate, onLogou
                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                    <input type="text" placeholder="Global search..." className="pl-9 pr-4 py-2 bg-white text-slate-900 dark:bg-slate-700 border border-slate-200 dark:border-transparent focus:bg-white dark:focus:bg-slate-600 focus:border-primary-200 rounded-full text-sm w-64 transition-all outline-none dark:text-slate-200 placeholder-slate-400" />
                 </div>
-                <button className="relative p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-full transition-colors">
-                   <Bell size={20} />
-                   <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-slate-800"></span>
-                </button>
+                
+                {/* Notifications */}
+                <div className="relative" ref={notifRef}>
+                  <button 
+                    onClick={() => setShowNotifications(!showNotifications)}
+                    className={`relative p-2 rounded-full transition-colors ${showNotifications ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+                  >
+                    <Bell size={20} />
+                    {notifications.length > 0 && (
+                      <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-slate-800 animate-pulse"></span>
+                    )}
+                  </button>
+
+                  {/* Dropdown */}
+                  {showNotifications && (
+                     <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="p-3 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-700/50">
+                           <h4 className="font-bold text-slate-800 dark:text-white text-sm">Notifications ({notifications.length})</h4>
+                           {notifications.length > 0 && (
+                              <button onClick={handleClearAll} className="text-xs text-slate-500 hover:text-red-500 flex items-center gap-1">
+                                 <Trash2 size={12} /> Clear all
+                              </button>
+                           )}
+                        </div>
+                        <div className="max-h-80 overflow-y-auto">
+                           {notifications.length === 0 ? (
+                              <div className="p-8 text-center text-slate-400 dark:text-slate-500 flex flex-col items-center">
+                                 <Bell size={32} className="mb-2 opacity-50" />
+                                 <p className="text-sm">No new notifications</p>
+                              </div>
+                           ) : (
+                              <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                                 {notifications.map(n => (
+                                    <div key={n.id} className="p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors flex gap-3 relative group">
+                                       <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${
+                                          n.type === 'error' ? 'bg-red-500' : 
+                                          n.type === 'warning' ? 'bg-orange-500' : 'bg-blue-500'
+                                       }`}></div>
+                                       <div className="flex-1">
+                                          <p className={`text-sm ${n.type === 'error' ? 'text-red-600 dark:text-red-400 font-medium' : 'text-slate-700 dark:text-slate-300'}`}>
+                                             {n.message}
+                                          </p>
+                                          <p className="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-wider">{n.type}</p>
+                                       </div>
+                                       <button 
+                                          onClick={(e) => handleDismiss(n.id, e)}
+                                          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                                       >
+                                          <X size={14} />
+                                       </button>
+                                    </div>
+                                 ))}
+                              </div>
+                           )}
+                        </div>
+                     </div>
+                  )}
+                </div>
+
                 <div 
                    className="flex items-center gap-3 pl-3 border-l border-slate-100 dark:border-slate-700"
                 >

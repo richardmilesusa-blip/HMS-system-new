@@ -1,4 +1,5 @@
 
+
 import { Patient, Doctor, PatientStatus, UserRole, AppState, Ward, Bed, BedStatus, Appointment, AppointmentStatus, Medication, Prescription, PrescriptionStatus, User, AuditLog } from '../types';
 
 const STORAGE_KEY = 'NEXUS_HMS_DB_V2';
@@ -211,7 +212,6 @@ class DatabaseService {
       currentUser: { id: 'U-001', name: 'Admin User', role: UserRole.ADMIN },
       notifications: [
         { id: 'n1', message: 'System Maintenance scheduled for midnight.', type: 'info', read: false },
-        { id: 'n2', message: 'Critical Lab Result: P-1002', type: 'error', read: false }
       ]
     };
     this.saveState(initialState);
@@ -341,10 +341,33 @@ class DatabaseService {
     return this.state.appointments || [];
   }
 
-  addAppointment(appt: Appointment): void {
+  checkAppointmentConflict(doctorId: string, date: string, time: string, duration: number, excludeId?: string): boolean {
+    const existing = this.state.appointments || [];
+    const newStart = new Date(`${date}T${time}`).getTime();
+    const newEnd = newStart + duration * 60000;
+
+    return existing.some(appt => {
+      if (appt.doctorId !== doctorId) return false;
+      if (appt.date !== date) return false;
+      if (appt.status === 'CANCELLED' || appt.status === 'NO_SHOW') return false; 
+      if (excludeId && appt.id === excludeId) return false;
+
+      const apptStart = new Date(`${appt.date}T${appt.time}`).getTime();
+      const apptEnd = apptStart + appt.duration * 60000;
+
+      // Check overlap: (StartA < EndB) and (EndA > StartB)
+      return (newStart < apptEnd && newEnd > apptStart);
+    });
+  }
+
+  addAppointment(appt: Appointment): { success: boolean, message?: string } {
+    if (this.checkAppointmentConflict(appt.doctorId, appt.date, appt.time, appt.duration)) {
+        return { success: false, message: 'Doctor is unavailable at this time (Double Booking).' };
+    }
     const newState = { ...this.state, appointments: [...(this.state.appointments || []), appt] };
     this.logAction('CREATE_APPT', `Scheduled appointment ${appt.id}`, 'APPOINTMENTS');
     this.saveState(newState);
+    return { success: true };
   }
 
   updateAppointment(appt: Appointment): void {
@@ -428,6 +451,11 @@ class DatabaseService {
     return this.state.currentUser;
   }
 
+  setCurrentUser(user: { id: string, name: string, role: UserRole }) {
+    this.state.currentUser = user;
+    this.saveState(this.state);
+  }
+
   validateUser(email: string, password: string): User | undefined {
     return this.state.users?.find(u => u.email === email && u.password === password && u.status === 'ACTIVE');
   }
@@ -464,6 +492,89 @@ class DatabaseService {
     return this.state.auditLogs || [];
   }
 
+  // --- Notification Methods ---
+
+  getNotifications(): Array<{id: string, message: string, type: 'info'|'warning'|'error', read: boolean}> {
+    this.refreshSystemAlerts();
+    return this.state.notifications || [];
+  }
+
+  dismissNotification(id: string): void {
+    const current = this.state.notifications || [];
+    const newNotifs = current.filter(n => n.id !== id);
+    this.saveState({ ...this.state, notifications: newNotifs });
+  }
+
+  clearAllNotifications(): void {
+    this.saveState({ ...this.state, notifications: [] });
+  }
+
+  private refreshSystemAlerts() {
+    const alerts: Array<{id: string, message: string, type: 'info'|'warning'|'error', read: boolean}> = [];
+    
+    // 1. Bed Capacity Alert
+    const availableBeds = this.state.beds.filter(b => b.status === 'AVAILABLE').length;
+    const totalBeds = this.state.beds.length;
+    if (availableBeds < 3) {
+      alerts.push({ 
+        id: 'SYS_ALERT_BEDS_CRITICAL', 
+        message: `Critical: Only ${availableBeds} beds available.`, 
+        type: 'error', 
+        read: false 
+      });
+    } else if (availableBeds < 5) {
+      alerts.push({ 
+        id: 'SYS_ALERT_BEDS_LOW', 
+        message: `Warning: Low bed capacity (${availableBeds} remaining).`, 
+        type: 'warning', 
+        read: false 
+      });
+    }
+
+    // 2. Low Stock Alert
+    const lowStockMeds = this.state.medications.filter(m => m.stock <= m.reorderLevel);
+    if (lowStockMeds.length > 0) {
+      alerts.push({ 
+        id: 'SYS_ALERT_STOCK', 
+        message: `${lowStockMeds.length} medications are below reorder level.`, 
+        type: 'warning', 
+        read: false 
+      });
+    }
+
+    // 3. Critical Patients Alert
+    const criticalPatients = this.state.patients.filter(p => p.vitalsHistory[0]?.flag === 'CRITICAL');
+    if (criticalPatients.length > 0) {
+       alerts.push({ 
+         id: 'SYS_ALERT_PATIENT_CRITICAL', 
+         message: `${criticalPatients.length} patients have critical vitals flagged.`, 
+         type: 'error', 
+         read: false 
+       });
+    }
+
+    // Merge alerts: retain existing user notifications, but upsert system alerts
+    let currentNotifications = this.state.notifications || [];
+    
+    alerts.forEach(alert => {
+       const exists = currentNotifications.some(n => n.id === alert.id);
+       if (!exists) {
+          // If condition is met and not in list, add it to the TOP
+          currentNotifications = [alert, ...currentNotifications];
+       }
+    });
+
+    const activeAlertIds = new Set(alerts.map(a => a.id));
+    currentNotifications = currentNotifications.filter(n => {
+       if (n.id.startsWith('SYS_ALERT_')) {
+          return activeAlertIds.has(n.id);
+       }
+       return true; // Keep manual/other notifications
+    });
+
+    this.state.notifications = currentNotifications;
+  }
+
   private logAction(action: string, details: string, module: string) {
     const newLog: AuditLog = {
       id: `LOG-${Date.now()}`,
@@ -476,8 +587,6 @@ class DatabaseService {
     };
     // Keep only last 100 logs
     const newLogs = [newLog, ...(this.state.auditLogs || [])].slice(0, 100);
-    // Note: We don't save state here to avoid recursive save calls if called from saveState,
-    // but typically we should. For this simple mock, we update state object directly before save.
     this.state.auditLogs = newLogs; 
   }
 

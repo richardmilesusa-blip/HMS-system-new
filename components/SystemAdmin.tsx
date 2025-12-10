@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../services/database';
 import { User, AuditLog, UserRole } from '../types';
-import { Users, Shield, Activity, Settings, Plus, Search, Lock, UserCheck, UserX, FileText, Key, Moon, Sun, Monitor } from 'lucide-react';
+import { Users, Shield, Activity, Settings, Plus, Search, Lock, UserCheck, UserX, FileText, Key, Moon, Sun, Monitor, AlertCircle, Bell } from 'lucide-react';
 
 export const SystemAdmin: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'USERS' | 'AUDIT' | 'CONFIG'>('USERS');
@@ -55,7 +55,6 @@ const UserManagement: React.FC = () => {
   }, []);
 
   const toggleStatus = (user: User) => {
-    // Double check logic, though UI should prevent it
     if (!isAdmin) return;
     const newStatus = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     db.updateUserStatus(user.id, newStatus);
@@ -70,6 +69,13 @@ const UserManagement: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col">
+       {!isAdmin && (
+         <div className="bg-yellow-50 dark:bg-yellow-900/20 px-4 py-2 border-b border-yellow-100 dark:border-yellow-900/50 text-xs text-yellow-700 dark:text-yellow-400 flex items-center gap-2">
+            <Lock size={12} />
+            You are viewing this module in Read-Only mode. Administrative actions are restricted.
+         </div>
+       )}
+
        <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center gap-4">
           <div className="relative flex-1 max-w-md">
              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
@@ -84,7 +90,7 @@ const UserManagement: React.FC = () => {
           {isAdmin && (
             <button 
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-sm font-medium"
+                className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-sm font-medium shadow-sm transition-colors"
             >
                 <Plus size={16} /> Add User
             </button>
@@ -111,9 +117,9 @@ const UserManagement: React.FC = () => {
                     </td>
                     <td className="p-4">
                        <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                          user.role === UserRole.ADMIN ? 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300' :
-                          user.role === UserRole.DOCTOR ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' :
-                          user.role === UserRole.NURSE ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' :
+                          user.role === UserRole.ADMIN ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300' :
+                          user.role === UserRole.DOCTOR ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
+                          user.role === UserRole.NURSE ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' :
                           'bg-slate-100 text-slate-700 dark:bg-slate-600 dark:text-slate-300'
                        }`}>
                           {user.role}
@@ -134,7 +140,7 @@ const UserManagement: React.FC = () => {
                            <div className="flex justify-end gap-2">
                                 <button 
                                     onClick={() => setPasswordModalUser(user)}
-                                    className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900 dark:hover:text-blue-400 transition-colors"
+                                    className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 dark:hover:text-blue-400 transition-colors"
                                     title="Change Password"
                                 >
                                     <Key size={18} />
@@ -142,7 +148,7 @@ const UserManagement: React.FC = () => {
                                 <button 
                                     onClick={() => toggleStatus(user)}
                                     className={`p-2 rounded-lg transition-colors ${
-                                        user.status === 'ACTIVE' ? 'text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900 dark:hover:text-red-400' : 'text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900 dark:hover:text-emerald-400'
+                                        user.status === 'ACTIVE' ? 'text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 dark:hover:text-red-400' : 'text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400'
                                     }`}
                                     title={user.status === 'ACTIVE' ? 'Deactivate User' : 'Activate User'}
                                 >
@@ -150,9 +156,9 @@ const UserManagement: React.FC = () => {
                                 </button>
                             </div>
                        ) : (
-                           <span className="text-xs text-slate-400 italic flex items-center justify-end gap-1">
-                               <Lock size={12} /> Read Only
-                           </span>
+                           <div className="flex items-center justify-end gap-1 text-slate-400 cursor-not-allowed opacity-60">
+                               <Lock size={14} />
+                           </div>
                        )}
                     </td>
                  </tr>
@@ -229,76 +235,116 @@ const SystemConfig: React.FC = () => {
   };
 
   return (
-    <div className="p-8 max-w-3xl">
-       <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6">General Settings</h3>
-       
-       <div className="space-y-6">
-          
-          {/* Appearance Section */}
-          <div className="pb-6 border-b border-slate-100 dark:border-slate-700">
-             <h4 className="font-medium text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2"><Monitor size={18}/> Appearance</h4>
-             <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600">
-                <div className="flex items-center gap-3">
-                   <div className={`p-2 rounded-full ${isDark ? 'bg-indigo-900 text-indigo-300' : 'bg-orange-100 text-orange-500'}`}>
-                      {isDark ? <Moon size={20} /> : <Sun size={20} />}
-                   </div>
-                   <div>
-                      <p className="font-bold text-slate-700 dark:text-slate-200">Dark Mode</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Switch between light and dark themes</p>
-                   </div>
+    <div className="p-6 overflow-y-auto h-full space-y-8 max-w-5xl mx-auto">
+      {/* Header with Demo Banner */}
+      <div className="space-y-4">
+          <div className="flex flex-col gap-1">
+             <h3 className="text-xl font-bold text-slate-800 dark:text-white">Settings</h3>
+             <p className="text-sm text-slate-500 dark:text-slate-400">Configure application preferences and system defaults.</p>
+          </div>
+
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-lg p-4 flex items-start gap-3">
+             <Lock className="text-amber-600 dark:text-amber-500 mt-0.5 flex-shrink-0" size={18} />
+             <div>
+                <h4 className="text-amber-800 dark:text-amber-400 font-bold text-sm">Read-Only Configuration</h4>
+                <p className="text-amber-700 dark:text-amber-500 text-xs mt-1">System settings are locked in demo mode to preserve integrity for all users.</p>
+             </div>
+          </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-8">
+            {/* Appearance Section */}
+            <section className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-2 bg-slate-50 dark:bg-slate-700/50">
+                    <Monitor size={18} className="text-slate-500 dark:text-slate-400" />
+                    <h4 className="font-bold text-slate-800 dark:text-white">Appearance</h4>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" checked={isDark} onChange={toggleTheme} className="sr-only peer" />
-                  <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
-                </label>
-             </div>
-          </div>
+                <div className="p-6">
+                     <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                           <div className={`p-3 rounded-full ${isDark ? 'bg-indigo-900/50 text-indigo-300' : 'bg-orange-100 text-orange-500'}`}>
+                              {isDark ? <Moon size={24} /> : <Sun size={24} />}
+                           </div>
+                           <div>
+                              <p className="font-bold text-slate-700 dark:text-slate-200 text-lg">Dark Mode</p>
+                              <p className="text-sm text-slate-500 dark:text-slate-400">Adjust the interface for low-light environments.</p>
+                           </div>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input type="checkbox" checked={isDark} onChange={toggleTheme} className="sr-only peer" />
+                          <div className="w-14 h-7 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+                        </label>
+                     </div>
+                </div>
+            </section>
 
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/50 rounded-lg p-4 flex items-start gap-3">
-             <Lock className="text-yellow-600 dark:text-yellow-500 mt-1" size={20} />
-             <div>
-                <h4 className="text-yellow-800 dark:text-yellow-400 font-bold text-sm">Demo Mode Restricted</h4>
-                <p className="text-yellow-700 dark:text-yellow-500 text-xs mt-1">System configuration changes are simulated in this demo environment. Changes will not persist after page reload.</p>
-             </div>
-          </div>
+            {/* System Info Section */}
+             <section className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-2 bg-slate-50 dark:bg-slate-700/50">
+                    <Activity size={18} className="text-slate-500 dark:text-slate-400" />
+                    <h4 className="font-bold text-slate-800 dark:text-white">System Information</h4>
+                </div>
+                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-xs font-bold uppercase text-slate-400 mb-2">Hospital Name</label>
+                        <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-medium">
+                             Nexus Health OS
+                        </div>
+                    </div>
+                     <div>
+                        <label className="block text-xs font-bold uppercase text-slate-400 mb-2">Support Email</label>
+                        <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-mono text-sm">
+                             admin@nexus.hms
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold uppercase text-slate-400 mb-2">Server Timezone</label>
+                        <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 opacity-75">
+                             UTC (GMT+00:00)
+                        </div>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold uppercase text-slate-400 mb-2">Version</label>
+                        <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 opacity-75">
+                             v2.5.0 (Build 2023.10.27)
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-             <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Hospital Name</label>
-                <input type="text" defaultValue="Nexus Health OS" className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white text-slate-900 dark:bg-slate-700 dark:text-white" readOnly />
-             </div>
-             <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Contact Email</label>
-                <input type="text" defaultValue="admin@nexus.hms" className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white text-slate-900 dark:bg-slate-700 dark:text-white" readOnly />
-             </div>
-             <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Timezone</label>
-                <select className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white text-slate-900 dark:bg-slate-700 dark:text-white" disabled>
-                   <option>UTC (GMT+00:00)</option>
-                   <option>EST (GMT-05:00)</option>
-                </select>
-             </div>
-             <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Backup Frequency</label>
-                <select className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white text-slate-900 dark:bg-slate-700 dark:text-white" disabled>
-                   <option>Daily</option>
-                   <option>Weekly</option>
-                </select>
-             </div>
-          </div>
-
-          <div className="pt-6 border-t border-slate-100 dark:border-slate-700">
-             <h4 className="font-medium text-slate-800 dark:text-slate-200 mb-4">Notification Preferences</h4>
-             <div className="space-y-3">
-                <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                   <input type="checkbox" defaultChecked disabled className="rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700" /> Email alerts for critical lab results
-                </label>
-                <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                   <input type="checkbox" defaultChecked disabled className="rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700" /> SMS notifications for staff shifts
-                </label>
-             </div>
-          </div>
-       </div>
+            {/* Notifications Section */}
+            <section className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-2 bg-slate-50 dark:bg-slate-700/50">
+                    <Bell size={18} className="text-slate-500 dark:text-slate-400" />
+                    <h4 className="font-bold text-slate-800 dark:text-white">Notification Preferences</h4>
+                </div>
+                <div className="p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="font-medium text-slate-700 dark:text-slate-300">Critical Lab Alerts</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">Receive emails when lab results are flagged as Critical.</p>
+                        </div>
+                        <input type="checkbox" checked disabled className="h-5 w-5 rounded border-slate-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50" />
+                    </div>
+                    <hr className="border-slate-100 dark:border-slate-700" />
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="font-medium text-slate-700 dark:text-slate-300">Shift Updates</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">SMS notifications for roster changes.</p>
+                        </div>
+                         <input type="checkbox" checked disabled className="h-5 w-5 rounded border-slate-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50" />
+                    </div>
+                    <hr className="border-slate-100 dark:border-slate-700" />
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="font-medium text-slate-700 dark:text-slate-300">System Maintenance</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">In-app banners for scheduled downtime.</p>
+                        </div>
+                         <input type="checkbox" checked disabled className="h-5 w-5 rounded border-slate-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50" />
+                    </div>
+                </div>
+            </section>
+      </div>
     </div>
   );
 };
@@ -323,9 +369,12 @@ const AddUserModal: React.FC<{ onClose: () => void; onSave: () => void }> = ({ o
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-md p-6 animate-in fade-in zoom-in duration-200 border dark:border-slate-700">
-          <h3 className="text-xl font-bold mb-4 text-slate-800 dark:text-white">Add System User</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold text-slate-800 dark:text-white">Add System User</h3>
+            <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><XCircleMini /></button>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-4">
              <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
@@ -345,7 +394,7 @@ const AddUserModal: React.FC<{ onClose: () => void; onSave: () => void }> = ({ o
                    {Object.values(UserRole).map(role => <option key={role} value={role}>{role}</option>)}
                 </select>
              </div>
-             <div className="flex justify-end gap-3 pt-4">
+             <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700 mt-4">
                 <button type="button" onClick={onClose} className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg">Cancel</button>
                 <button type="submit" className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-sm">Create User</button>
              </div>
@@ -376,9 +425,12 @@ const ChangePasswordModal: React.FC<{ user: User; onClose: () => void }> = ({ us
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-sm p-6 animate-in fade-in zoom-in duration-200 border dark:border-slate-700">
-          <h3 className="text-xl font-bold mb-1 text-slate-800 dark:text-white">Change Password</h3>
+          <div className="flex justify-between items-center mb-1">
+             <h3 className="text-xl font-bold text-slate-800 dark:text-white">Change Password</h3>
+             <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><XCircleMini /></button>
+          </div>
           <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Resetting password for <span className="font-semibold text-slate-800 dark:text-white">{user.name}</span></p>
           
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -391,9 +443,9 @@ const ChangePasswordModal: React.FC<{ user: User; onClose: () => void }> = ({ us
                 <input required type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white" />
              </div>
              
-             {error && <p className="text-xs text-red-500">{error}</p>}
+             {error && <p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle size={12}/> {error}</p>}
 
-             <div className="flex justify-end gap-3 pt-4">
+             <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700 mt-4">
                 <button type="button" onClick={onClose} className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg">Cancel</button>
                 <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm">Update Password</button>
              </div>

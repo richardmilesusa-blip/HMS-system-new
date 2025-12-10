@@ -33,6 +33,7 @@ const App: React.FC = () => {
 
   const handleLogin = (u: User) => {
     setUser(u);
+    db.setCurrentUser(u); // Sync with DB state for RBAC
     setCurrentView('DASHBOARD'); // Reset to dashboard on login
   };
 
@@ -48,7 +49,7 @@ const App: React.FC = () => {
     // Security Check: If user doesn't have access to this view, show unauthorized
     if (!hasAccess(user.role, currentView)) {
        return (
-         <div className="flex flex-col items-center justify-center h-full text-center">
+         <div className="flex flex-col items-center justify-center h-full text-center animate-fade-in">
             <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-full mb-4">
                <Lock size={48} className="text-red-500" />
             </div>
@@ -79,7 +80,7 @@ const App: React.FC = () => {
         return <PharmacyModule />;
       case 'CLINICAL_AI':
         return (
-          <div className="max-w-4xl mx-auto h-full flex flex-col">
+          <div className="max-w-4xl mx-auto h-full flex flex-col animate-fade-in">
              <div className="mb-6">
                <h2 className="text-2xl font-bold text-slate-800 dark:text-white">General Medical Consultant</h2>
                <p className="text-slate-500 dark:text-slate-400">Ask general medical questions or get administrative assistance.</p>

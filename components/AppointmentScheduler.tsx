@@ -1,8 +1,9 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { db } from '../services/database';
 import { Appointment, Doctor, AppointmentStatus, AppointmentType } from '../types';
-import { Calendar, User, CheckCircle, XCircle, Plus, Filter } from 'lucide-react';
+import { Calendar, User, CheckCircle, XCircle, Plus, Filter, AlertCircle } from 'lucide-react';
 
 export const AppointmentScheduler: React.FC = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -206,11 +207,14 @@ const AppointmentModal: React.FC<{
   const [time, setTime] = useState('09:00');
   const [type, setType] = useState<AppointmentType>('CONSULTATION');
   const [notes, setNotes] = useState('');
+  const [error, setError] = useState('');
 
   const patients = db.getPatients();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    
     if (!patientId || !doctorId) return;
 
     const newAppt: Appointment = {
@@ -225,8 +229,12 @@ const AppointmentModal: React.FC<{
       notes
     };
 
-    db.addAppointment(newAppt);
-    onSave();
+    const result = db.addAppointment(newAppt);
+    if (result.success) {
+      onSave();
+    } else {
+      setError(result.message || 'Scheduling conflict occurred.');
+    }
   };
 
   return (
@@ -237,15 +245,22 @@ const AppointmentModal: React.FC<{
             <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><XCircle size={24} /></button>
          </div>
 
+         {error && (
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-300 rounded-lg flex items-center gap-2 text-sm border border-red-100 dark:border-red-900/50">
+               <AlertCircle size={16} />
+               {error}
+            </div>
+         )}
+
          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
                <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Date</label>
-                  <input required type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white" />
+                  <input required type="date" value={date} onChange={e => { setDate(e.target.value); setError(''); }} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white" />
                </div>
                <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Time</label>
-                  <input required type="time" value={time} onChange={e => setTime(e.target.value)} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white" />
+                  <input required type="time" value={time} onChange={e => { setTime(e.target.value); setError(''); }} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white" />
                </div>
             </div>
 
@@ -259,7 +274,7 @@ const AppointmentModal: React.FC<{
 
             <div>
                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Doctor</label>
-               <select required value={doctorId} onChange={e => setDoctorId(e.target.value)} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white">
+               <select required value={doctorId} onChange={e => { setDoctorId(e.target.value); setError(''); }} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white">
                   <option value="">Select Doctor...</option>
                   {doctors.map(d => <option key={d.id} value={d.id}>{d.name} ({d.specialty})</option>)}
                </select>
