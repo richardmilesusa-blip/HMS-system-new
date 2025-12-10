@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { aiService } from '../services/ai';
 import { Patient } from '../types';
@@ -65,7 +66,7 @@ export const ClinicalSupport: React.FC<{ patient?: Patient }> = ({ patient }) =>
   };
 
   return (
-    <div className="flex flex-col h-[600px] bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+    <div className="flex flex-col h-[600px] bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
       {/* Header */}
       <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-4 flex items-center gap-3 shadow-sm">
         <div className="p-2 bg-white bg-opacity-20 rounded-lg">
@@ -81,19 +82,19 @@ export const ClinicalSupport: React.FC<{ patient?: Patient }> = ({ patient }) =>
       <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
         {messages.map((msg) => (
           <div key={msg.id} className={`flex gap-3 ${msg.sender === 'user' ? 'flex-row-reverse' : ''}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.sender === 'user' ? 'bg-slate-200' : 'bg-purple-100 text-purple-600'}`}>
-               {msg.sender === 'user' ? <User size={16} /> : <Bot size={16} />}
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.sender === 'user' ? 'bg-slate-200 dark:bg-slate-700' : 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300'}`}>
+               {msg.sender === 'user' ? <User size={16} className="text-slate-600 dark:text-slate-300" /> : <Bot size={16} />}
             </div>
             <div className={`max-w-[80%] rounded-2xl p-4 text-sm leading-relaxed ${
               msg.sender === 'user' 
-                ? 'bg-white border border-slate-100 text-slate-800 shadow-sm rounded-tr-none' 
-                : 'bg-white border border-purple-100 text-slate-800 shadow-sm rounded-tl-none'
+                ? 'bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-800 dark:text-slate-200 shadow-sm rounded-tr-none' 
+                : 'bg-white dark:bg-slate-800 border border-purple-100 dark:border-purple-900/30 text-slate-800 dark:text-slate-200 shadow-sm rounded-tl-none'
             }`}>
               <ReactMarkdown 
-                className="prose prose-sm max-w-none"
+                className="prose prose-sm max-w-none dark:prose-invert"
                 components={{
                     p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
-                    strong: ({node, ...props}) => <span className="font-bold text-slate-900" {...props} />,
+                    strong: ({node, ...props}) => <span className="font-bold text-slate-900 dark:text-white" {...props} />,
                     ul: ({node, ...props}) => <ul className="list-disc list-outside ml-4 mb-2" {...props} />,
                     li: ({node, ...props}) => <li className="mb-1" {...props} />
                 }}
@@ -108,22 +109,22 @@ export const ClinicalSupport: React.FC<{ patient?: Patient }> = ({ patient }) =>
         ))}
         {loading && (
           <div className="flex gap-3">
-             <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center flex-shrink-0">
+             <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 flex items-center justify-center flex-shrink-0">
                 <Bot size={16} />
              </div>
-             <div className="bg-white border border-slate-100 rounded-2xl rounded-tl-none p-4 shadow-sm flex items-center gap-2">
-                <Loader2 className="animate-spin text-purple-600" size={16} />
-                <span className="text-xs text-slate-500 font-medium">Analyzing records...</span>
+             <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl rounded-tl-none p-4 shadow-sm flex items-center gap-2">
+                <Loader2 className="animate-spin text-purple-600 dark:text-purple-400" size={16} />
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Analyzing records...</span>
              </div>
           </div>
         )}
       </div>
 
       {/* Input */}
-      <div className="p-4 bg-white border-t border-slate-200">
-        <div className="flex items-end gap-2 bg-slate-50 border border-slate-200 rounded-xl p-2 focus-within:ring-2 focus-within:ring-purple-500 focus-within:border-transparent transition-all">
+      <div className="p-4 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
+        <div className="flex items-end gap-2 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl p-2 focus-within:ring-2 focus-within:ring-purple-500 focus-within:border-transparent transition-all">
           <textarea
-            className="flex-1 bg-transparent border-none focus:ring-0 resize-none max-h-32 p-2 text-sm text-slate-800 placeholder-slate-400"
+            className="flex-1 bg-transparent border-none focus:ring-0 resize-none max-h-32 p-2 text-sm text-slate-900 dark:text-white placeholder-slate-400"
             rows={1}
             placeholder={patient ? `Ask about ${patient.lastName}'s condition...` : "Ask a medical question..."}
             value={query}
@@ -133,12 +134,12 @@ export const ClinicalSupport: React.FC<{ patient?: Patient }> = ({ patient }) =>
           <button 
             onClick={handleSend}
             disabled={!query.trim() || loading}
-            className={`p-2 rounded-lg transition-colors ${query.trim() && !loading ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+            className={`p-2 rounded-lg transition-colors ${query.trim() && !loading ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-slate-200 dark:bg-slate-600 text-slate-400 dark:text-slate-500 cursor-not-allowed'}`}
           >
             <Send size={18} />
           </button>
         </div>
-        <p className="text-[10px] text-center text-slate-400 mt-2">
+        <p className="text-[10px] text-center text-slate-400 dark:text-slate-500 mt-2">
            AI responses are for support only and must be verified by a physician.
         </p>
       </div>

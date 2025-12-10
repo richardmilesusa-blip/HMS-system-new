@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { db } from '../services/database';
 import { User, AuditLog, UserRole } from '../types';
@@ -69,7 +70,7 @@ const UserManagement: React.FC = () => {
              <input 
                type="text" 
                placeholder="Search users..." 
-               className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+               className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white text-slate-900 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                value={searchTerm}
                onChange={(e) => setSearchTerm(e.target.value)}
              />
@@ -250,22 +251,22 @@ const SystemConfig: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
              <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Hospital Name</label>
-                <input type="text" defaultValue="Nexus Health OS" className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white" readOnly />
+                <input type="text" defaultValue="Nexus Health OS" className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white text-slate-900 dark:bg-slate-700 dark:text-white" readOnly />
              </div>
              <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Contact Email</label>
-                <input type="text" defaultValue="admin@nexus.hms" className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white" readOnly />
+                <input type="text" defaultValue="admin@nexus.hms" className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white text-slate-900 dark:bg-slate-700 dark:text-white" readOnly />
              </div>
              <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Timezone</label>
-                <select className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white" disabled>
+                <select className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white text-slate-900 dark:bg-slate-700 dark:text-white" disabled>
                    <option>UTC (GMT+00:00)</option>
                    <option>EST (GMT-05:00)</option>
                 </select>
              </div>
              <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Backup Frequency</label>
-                <select className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white" disabled>
+                <select className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white text-slate-900 dark:bg-slate-700 dark:text-white" disabled>
                    <option>Daily</option>
                    <option>Weekly</option>
                 </select>
@@ -276,10 +277,10 @@ const SystemConfig: React.FC = () => {
              <h4 className="font-medium text-slate-800 dark:text-slate-200 mb-4">Notification Preferences</h4>
              <div className="space-y-3">
                 <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                   <input type="checkbox" defaultChecked disabled className="rounded border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700" /> Email alerts for critical lab results
+                   <input type="checkbox" defaultChecked disabled className="rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700" /> Email alerts for critical lab results
                 </label>
                 <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                   <input type="checkbox" defaultChecked disabled className="rounded border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700" /> SMS notifications for staff shifts
+                   <input type="checkbox" defaultChecked disabled className="rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700" /> SMS notifications for staff shifts
                 </label>
              </div>
           </div>
@@ -314,19 +315,19 @@ const AddUserModal: React.FC<{ onClose: () => void; onSave: () => void }> = ({ o
           <form onSubmit={handleSubmit} className="space-y-4">
              <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
-                <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none dark:bg-slate-700 dark:text-white" />
+                <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white" />
              </div>
              <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
-                <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none dark:bg-slate-700 dark:text-white" />
+                <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white" />
              </div>
              <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Initial Password</label>
-                <input required type="password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none dark:bg-slate-700 dark:text-white" placeholder="Default: password123" />
+                <input required type="password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white" placeholder="Default: password123" />
              </div>
              <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Role</label>
-                <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value as UserRole})} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none dark:bg-slate-700 dark:text-white">
+                <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value as UserRole})} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white">
                    {Object.values(UserRole).map(role => <option key={role} value={role}>{role}</option>)}
                 </select>
              </div>
@@ -369,11 +370,11 @@ const ChangePasswordModal: React.FC<{ user: User; onClose: () => void }> = ({ us
           <form onSubmit={handleSubmit} className="space-y-4">
              <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">New Password</label>
-                <input required type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none dark:bg-slate-700 dark:text-white" />
+                <input required type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white" />
              </div>
              <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Confirm Password</label>
-                <input required type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none dark:bg-slate-700 dark:text-white" />
+                <input required type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white" />
              </div>
              
              {error && <p className="text-xs text-red-500">{error}</p>}

@@ -41,10 +41,10 @@ export const PatientModule: React.FC = () => {
 
   const getStatusColor = (status: PatientStatus) => {
     switch (status) {
-      case PatientStatus.ADMITTED: return 'bg-blue-100 text-blue-800';
-      case PatientStatus.EMERGENCY: return 'bg-red-100 text-red-800';
-      case PatientStatus.DISCHARGED: return 'bg-gray-100 text-gray-800';
-      default: return 'bg-green-100 text-green-800';
+      case PatientStatus.ADMITTED: return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200';
+      case PatientStatus.EMERGENCY: return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200';
+      case PatientStatus.DISCHARGED: return 'bg-gray-100 text-gray-800 dark:bg-slate-700 dark:text-slate-300';
+      default: return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200';
     }
   };
 
@@ -55,9 +55,9 @@ export const PatientModule: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 h-full flex flex-col">
+    <div className="space-y-6 h-full flex flex-col animate-fade-in">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-slate-800">Patient Registry</h2>
+        <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Patient Registry</h2>
         <button 
           onClick={() => setShowAddForm(true)}
           className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
@@ -67,22 +67,22 @@ export const PatientModule: React.FC = () => {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex-1 flex flex-col overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex-1 flex flex-col overflow-hidden">
         {/* Toolbar */}
-        <div className="p-4 border-b border-slate-100 flex gap-4">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex gap-4">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={18} />
             <input 
               type="text" 
               placeholder="Search by name or ID..." 
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white text-slate-900 dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent placeholder-slate-400"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <div className="flex gap-2">
             {['All', 'Admitted', 'Emergency', 'Outpatient'].map(filter => (
-               <button key={filter} className="px-3 py-1 text-sm rounded-full border border-slate-200 hover:bg-slate-50 text-slate-600">
+               <button key={filter} className="px-3 py-1 text-sm rounded-full border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors">
                  {filter}
                </button>
             ))}
@@ -92,22 +92,22 @@ export const PatientModule: React.FC = () => {
         {/* Table */}
         <div className="overflow-auto flex-1">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-slate-50 sticky top-0 z-10">
+            <thead className="bg-slate-50 dark:bg-slate-700 sticky top-0 z-10">
               <tr>
-                <th className="p-4 font-semibold text-slate-600 border-b border-slate-200">Patient ID</th>
-                <th className="p-4 font-semibold text-slate-600 border-b border-slate-200">Name</th>
-                <th className="p-4 font-semibold text-slate-600 border-b border-slate-200">Status</th>
-                <th className="p-4 font-semibold text-slate-600 border-b border-slate-200">Gender</th>
-                <th className="p-4 font-semibold text-slate-600 border-b border-slate-200">Room</th>
-                <th className="p-4 font-semibold text-slate-600 border-b border-slate-200">Condition</th>
-                <th className="p-4 font-semibold text-slate-600 border-b border-slate-200">Actions</th>
+                <th className="p-4 font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-600">Patient ID</th>
+                <th className="p-4 font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-600">Name</th>
+                <th className="p-4 font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-600">Status</th>
+                <th className="p-4 font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-600">Gender</th>
+                <th className="p-4 font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-600">Room</th>
+                <th className="p-4 font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-600">Condition</th>
+                <th className="p-4 font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-600">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
               {filteredPatients.map((patient) => (
-                <tr key={patient.id} className="hover:bg-slate-50 transition-colors cursor-pointer group" onClick={() => handlePatientClick(patient)}>
-                  <td className="p-4 text-slate-500 font-mono text-sm">{patient.id}</td>
-                  <td className="p-4 font-medium text-slate-900">
+                <tr key={patient.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer group" onClick={() => handlePatientClick(patient)}>
+                  <td className="p-4 text-slate-500 dark:text-slate-400 font-mono text-sm">{patient.id}</td>
+                  <td className="p-4 font-medium text-slate-900 dark:text-slate-100">
                     {patient.lastName}, {patient.firstName}
                   </td>
                   <td className="p-4">
@@ -115,13 +115,13 @@ export const PatientModule: React.FC = () => {
                       {patient.status}
                     </span>
                   </td>
-                  <td className="p-4 text-slate-600">{patient.gender}</td>
-                  <td className="p-4 text-slate-600">
+                  <td className="p-4 text-slate-600 dark:text-slate-300">{patient.gender}</td>
+                  <td className="p-4 text-slate-600 dark:text-slate-300">
                     {patient.roomNumber ? (
-                      <span className="font-mono text-slate-700 bg-slate-100 px-2 py-1 rounded">{patient.roomNumber}</span>
+                      <span className="font-mono text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-600 px-2 py-1 rounded">{patient.roomNumber}</span>
                     ) : '-'}
                   </td>
-                  <td className="p-4 text-slate-600">
+                  <td className="p-4 text-slate-600 dark:text-slate-300">
                     {patient.diagnosis.length > 0 ? patient.diagnosis[0] : 'Undiagnosed'}
                   </td>
                   <td className="p-4">
@@ -129,12 +129,12 @@ export const PatientModule: React.FC = () => {
                        {(!patient.bedId && patient.status !== PatientStatus.DISCHARGED) && (
                          <button 
                             onClick={(e) => handleAdmitClick(e, patient)}
-                            className="flex items-center gap-1 text-emerald-600 hover:text-emerald-800 font-medium text-xs bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded transition-colors"
+                            className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200 font-medium text-xs bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 px-2 py-1 rounded transition-colors"
                           >
                             <BedDouble size={14} /> Assign Bed
                           </button>
                        )}
-                       <button className="text-primary-600 hover:text-primary-800 font-medium text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                       <button className="text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-200 font-medium text-sm opacity-0 group-hover:opacity-100 transition-opacity">
                          View
                        </button>
                      </div>
@@ -215,38 +215,38 @@ const AddPatientModal: React.FC<{ onClose: () => void; onSave: () => void }> = (
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl max-w-2xl w-full p-6 animate-in fade-in zoom-in duration-200 border dark:border-slate-700">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold text-slate-800">Register New Patient</h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><XCircle size={24} /></button>
+          <h3 className="text-xl font-bold text-slate-800 dark:text-white">Register New Patient</h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><XCircle size={24} /></button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">First Name *</label>
-              <input required name="firstName" value={formData.firstName} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">First Name *</label>
+              <input required name="firstName" value={formData.firstName} onChange={handleChange} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Last Name *</label>
-              <input required name="lastName" value={formData.lastName} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Last Name *</label>
+              <input required name="lastName" value={formData.lastName} onChange={handleChange} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Date of Birth *</label>
-              <input required type="date" name="dob" value={formData.dob} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Date of Birth *</label>
+              <input required type="date" name="dob" value={formData.dob} onChange={handleChange} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Gender *</label>
-              <select name="gender" value={formData.gender} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Gender *</label>
+              <select name="gender" value={formData.gender} onChange={handleChange} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white">
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
                 <option value="Other">Other</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Blood Type</label>
-              <select name="bloodType" value={formData.bloodType} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Blood Type</label>
+              <select name="bloodType" value={formData.bloodType} onChange={handleChange} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white">
                 <option value="">Unknown</option>
                 <option value="A+">A+</option>
                 <option value="A-">A-</option>
@@ -259,25 +259,25 @@ const AddPatientModal: React.FC<{ onClose: () => void; onSave: () => void }> = (
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Initial Status</label>
-              <select name="status" value={formData.status} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Initial Status</label>
+              <select name="status" value={formData.status} onChange={handleChange} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white">
                 <option value="OUTPATIENT">Outpatient</option>
                 <option value="EMERGENCY">Emergency</option>
                 <option value="ADMITTED">Admitted</option>
               </select>
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Known Allergies</label>
-              <input name="allergies" placeholder="e.g. Penicillin, Peanuts (comma separated)" value={formData.allergies} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Known Allergies</label>
+              <input name="allergies" placeholder="e.g. Penicillin, Peanuts (comma separated)" value={formData.allergies} onChange={handleChange} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white" />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1">Preliminary Diagnosis / Chief Complaint</label>
-              <textarea name="diagnosis" rows={2} placeholder="e.g. Fever, Cough (comma separated)" value={formData.diagnosis} onChange={handleChange} className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none resize-none"></textarea>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Preliminary Diagnosis / Chief Complaint</label>
+              <textarea name="diagnosis" rows={2} placeholder="e.g. Fever, Cough (comma separated)" value={formData.diagnosis} onChange={handleChange} className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none resize-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white"></textarea>
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-4">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg">Cancel</button>
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700 mt-4">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg">Cancel</button>
             <button type="submit" className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-sm flex items-center gap-2">
               <Save size={18} /> Save Record
             </button>
@@ -312,19 +312,19 @@ const AdmitPatientModal: React.FC<{ patient: Patient; onClose: () => void; onCon
     : availableBeds;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-       <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200 border dark:border-slate-700">
           <div className="flex justify-between items-start mb-6">
              <div>
-                <h3 className="text-xl font-bold text-slate-800">Admit Patient</h3>
-                <p className="text-sm text-slate-500">Assign a bed to start admission.</p>
+                <h3 className="text-xl font-bold text-slate-800 dark:text-white">Admit Patient</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Assign a bed to start admission.</p>
              </div>
-             <button onClick={onClose} className="text-slate-400 hover:text-slate-600"><XCircle size={24} /></button>
+             <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><XCircle size={24} /></button>
           </div>
 
-          <div className="bg-slate-50 p-3 rounded-lg mb-6 border border-slate-100">
-             <p className="font-bold text-slate-800">{patient.lastName}, {patient.firstName}</p>
-             <div className="flex gap-4 text-xs text-slate-500 mt-1">
+          <div className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg mb-6 border border-slate-100 dark:border-slate-600">
+             <p className="font-bold text-slate-800 dark:text-slate-100">{patient.lastName}, {patient.firstName}</p>
+             <div className="flex gap-4 text-xs text-slate-500 dark:text-slate-300 mt-1">
                 <span>ID: {patient.id}</span>
                 <span>Diagnosis: {patient.diagnosis[0] || 'N/A'}</span>
              </div>
@@ -332,9 +332,9 @@ const AdmitPatientModal: React.FC<{ patient: Patient; onClose: () => void; onCon
 
           <div className="space-y-4">
              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Ward / Department</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ward / Department</label>
                 <select 
-                  className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white"
+                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white"
                   value={selectedWardId}
                   onChange={(e) => { setSelectedWardId(e.target.value); setSelectedBedId(''); }}
                 >
@@ -344,9 +344,9 @@ const AdmitPatientModal: React.FC<{ patient: Patient; onClose: () => void; onCon
              </div>
 
              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Select Available Bed</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Select Available Bed</label>
                 <select 
-                  className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white disabled:bg-slate-100 disabled:text-slate-400"
+                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white disabled:bg-slate-100 dark:disabled:bg-slate-600 disabled:text-slate-400"
                   value={selectedBedId}
                   onChange={(e) => setSelectedBedId(e.target.value)}
                   disabled={!selectedWardId}
@@ -363,7 +363,7 @@ const AdmitPatientModal: React.FC<{ patient: Patient; onClose: () => void; onCon
           </div>
 
           <div className="flex justify-end gap-3 mt-8">
-             <button onClick={onClose} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-medium">Cancel</button>
+             <button onClick={onClose} className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg font-medium">Cancel</button>
              <button 
                 onClick={handleConfirm}
                 disabled={!selectedBedId}
@@ -388,26 +388,26 @@ const PatientDetailView: React.FC<{ patient: Patient; onBack: () => void }> = ({
     <div className="h-full flex flex-col animate-fade-in">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <button onClick={onBack} className="p-2 hover:bg-white rounded-full transition-colors text-slate-500 hover:text-slate-900">
+        <button onClick={onBack} className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-full transition-colors text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
           ← Back
         </button>
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">{patient.firstName} {patient.lastName}</h2>
-          <div className="flex gap-4 text-sm text-slate-500">
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">{patient.firstName} {patient.lastName}</h2>
+          <div className="flex gap-4 text-sm text-slate-500 dark:text-slate-400">
              <span>ID: {patient.id}</span>
              <span>DOB: {patient.dob}</span>
              <span>Blood: {patient.bloodType}</span>
           </div>
         </div>
         <div className="ml-auto flex gap-2">
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full font-medium text-sm">{patient.status}</span>
-            {patient.roomNumber && <span className="px-3 py-1 bg-slate-200 text-slate-700 rounded-full font-medium text-sm">Room {patient.roomNumber}</span>}
+            <span className="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200 rounded-full font-medium text-sm">{patient.status}</span>
+            {patient.roomNumber && <span className="px-3 py-1 bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 rounded-full font-medium text-sm">Room {patient.roomNumber}</span>}
         </div>
       </div>
 
-      <div className="flex gap-6 flex-1 overflow-hidden">
+      <div className="flex flex-col lg:flex-row gap-6 flex-1 overflow-hidden">
         {/* Left Panel: Menu */}
-        <div className="w-64 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col p-2">
+        <div className="w-full lg:w-64 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-row lg:flex-col p-2 overflow-x-auto lg:overflow-visible">
            {[
              { id: 'OVERVIEW', label: 'Clinical Overview', icon: User },
              { id: 'VITALS', label: 'Vitals History', icon: Activity },
@@ -417,10 +417,10 @@ const PatientDetailView: React.FC<{ patient: Patient; onBack: () => void }> = ({
              <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-3 p-3 rounded-lg text-left transition-colors mb-1 ${
+                className={`flex items-center gap-3 p-3 rounded-lg text-left transition-colors whitespace-nowrap lg:whitespace-normal mb-0 lg:mb-1 mr-2 lg:mr-0 ${
                   activeTab === tab.id 
-                    ? tab.special ? 'bg-purple-50 text-purple-700 border border-purple-100' : 'bg-primary-50 text-primary-700 border border-primary-100'
-                    : 'text-slate-600 hover:bg-slate-50'
+                    ? tab.special ? 'bg-purple-50 text-purple-700 border border-purple-100 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800' : 'bg-primary-50 text-primary-700 border border-primary-100 dark:bg-primary-900/20 dark:text-primary-300 dark:border-primary-800'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
                 }`}
              >
                <tab.icon size={18} />
@@ -430,43 +430,43 @@ const PatientDetailView: React.FC<{ patient: Patient; onBack: () => void }> = ({
         </div>
 
         {/* Right Panel: Content */}
-        <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 p-6 overflow-y-auto">
+        <div className="flex-1 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 overflow-y-auto">
            {activeTab === 'OVERVIEW' && (
              <div className="space-y-6">
-                <div className="grid grid-cols-3 gap-4">
-                   <div className="p-4 bg-red-50 rounded-lg border border-red-100">
-                      <h4 className="text-red-800 font-semibold mb-2">Allergies</h4>
-                      <ul className="list-disc list-inside text-red-700 text-sm">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                   <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-100 dark:border-red-900/50">
+                      <h4 className="text-red-800 dark:text-red-300 font-semibold mb-2">Allergies</h4>
+                      <ul className="list-disc list-inside text-red-700 dark:text-red-200 text-sm">
                         {patient.allergies.length ? patient.allergies.map(a => <li key={a}>{a}</li>) : <li>No known allergies</li>}
                       </ul>
                    </div>
-                   <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-                      <h4 className="text-blue-800 font-semibold mb-2">Diagnosis</h4>
-                      <ul className="list-disc list-inside text-blue-700 text-sm">
+                   <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-900/50">
+                      <h4 className="text-blue-800 dark:text-blue-300 font-semibold mb-2">Diagnosis</h4>
+                      <ul className="list-disc list-inside text-blue-700 dark:text-blue-200 text-sm">
                         {patient.diagnosis.length ? patient.diagnosis.map(d => <li key={d}>{d}</li>) : <li>Pending diagnosis</li>}
                       </ul>
                    </div>
-                   <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
-                      <h4 className="text-slate-800 font-semibold mb-2">Assigned Team</h4>
-                      <p className="text-slate-600 text-sm">Dr. Gregory House</p>
-                      <p className="text-slate-500 text-xs">Primary Care</p>
+                   <div className="p-4 bg-slate-50 dark:bg-slate-700/30 rounded-lg border border-slate-100 dark:border-slate-700">
+                      <h4 className="text-slate-800 dark:text-white font-semibold mb-2">Assigned Team</h4>
+                      <p className="text-slate-600 dark:text-slate-300 text-sm">Dr. Gregory House</p>
+                      <p className="text-slate-500 dark:text-slate-400 text-xs">Primary Care</p>
                    </div>
                 </div>
 
-                <div className="border-t border-slate-100 pt-6">
-                    <h3 className="font-bold text-lg mb-4 text-slate-800">Latest Vitals</h3>
-                    <div className="grid grid-cols-4 gap-4">
+                <div className="border-t border-slate-100 dark:border-slate-700 pt-6">
+                    <h3 className="font-bold text-lg mb-4 text-slate-800 dark:text-white">Latest Vitals</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {[
                            { label: 'Heart Rate', value: `${latestVitals?.heartRate || '--'} bpm`, icon: Heart, color: 'text-rose-500' },
                            { label: 'Blood Pressure', value: `${latestVitals?.bpSystolic}/${latestVitals?.bpDiastolic}`, icon: Activity, color: 'text-blue-500' },
                            { label: 'Temperature', value: `${latestVitals?.temperature || '--'} °C`, icon: Thermometer, color: 'text-orange-500' },
                            { label: 'SpO2', value: `${latestVitals?.spo2 || '--'}%`, icon: Wind, color: 'text-cyan-500' },
                         ].map((v, i) => (
-                           <div key={i} className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg">
+                           <div key={i} className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
                                <v.icon className={v.color} size={24} />
                                <div>
-                                  <p className="text-xs text-slate-500 uppercase font-bold">{v.label}</p>
-                                  <p className="text-xl font-mono font-semibold text-slate-800">{v.value}</p>
+                                  <p className="text-xs text-slate-500 dark:text-slate-400 uppercase font-bold">{v.label}</p>
+                                  <p className="text-xl font-mono font-semibold text-slate-800 dark:text-white">{v.value}</p>
                                </div>
                            </div>
                         ))}
@@ -477,47 +477,49 @@ const PatientDetailView: React.FC<{ patient: Patient; onBack: () => void }> = ({
 
            {activeTab === 'VITALS' && (
              <div>
-                <h3 className="font-bold text-lg mb-4">Vitals History</h3>
-                <table className="w-full text-sm text-left">
-                   <thead className="bg-slate-50">
-                     <tr>
-                       <th className="p-3">Timestamp</th>
-                       <th className="p-3">HR (bpm)</th>
-                       <th className="p-3">BP (mmHg)</th>
-                       <th className="p-3">Temp (°C)</th>
-                       <th className="p-3">SpO2 (%)</th>
-                     </tr>
-                   </thead>
-                   <tbody>
-                      {patient.vitalsHistory.map((v, i) => (
-                        <tr key={i} className="border-b border-slate-50">
-                           <td className="p-3 font-mono">{new Date(v.date).toLocaleString()}</td>
-                           <td className="p-3">{v.heartRate}</td>
-                           <td className="p-3">{v.bpSystolic}/{v.bpDiastolic}</td>
-                           <td className="p-3">{v.temperature}</td>
-                           <td className="p-3">{v.spo2}</td>
-                        </tr>
-                      ))}
-                   </tbody>
-                </table>
+                <h3 className="font-bold text-lg mb-4 text-slate-800 dark:text-white">Vitals History</h3>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                       <thead className="bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                         <tr>
+                           <th className="p-3">Timestamp</th>
+                           <th className="p-3">HR (bpm)</th>
+                           <th className="p-3">BP (mmHg)</th>
+                           <th className="p-3">Temp (°C)</th>
+                           <th className="p-3">SpO2 (%)</th>
+                         </tr>
+                       </thead>
+                       <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                          {patient.vitalsHistory.map((v, i) => (
+                            <tr key={i} className="border-b border-slate-50 dark:border-slate-700 text-slate-700 dark:text-slate-200">
+                               <td className="p-3 font-mono">{new Date(v.date).toLocaleString()}</td>
+                               <td className="p-3">{v.heartRate}</td>
+                               <td className="p-3">{v.bpSystolic}/{v.bpDiastolic}</td>
+                               <td className="p-3">{v.temperature}</td>
+                               <td className="p-3">{v.spo2}</td>
+                            </tr>
+                          ))}
+                       </tbody>
+                    </table>
+                </div>
              </div>
            )}
 
            {activeTab === 'LABS' && (
              <div>
-               <h3 className="font-bold text-lg mb-4">Laboratory Results</h3>
+               <h3 className="font-bold text-lg mb-4 text-slate-800 dark:text-white">Laboratory Results</h3>
                <div className="space-y-3">
                  {patient.labResults.length > 0 ? patient.labResults.map(lab => (
-                   <div key={lab.id} className="border border-slate-200 p-4 rounded-lg flex justify-between items-center">
+                   <div key={lab.id} className="border border-slate-200 dark:border-slate-700 p-4 rounded-lg flex justify-between items-center">
                       <div>
-                        <h4 className="font-semibold text-slate-800">{lab.testName}</h4>
-                        <p className="text-sm text-slate-500">{new Date(lab.date).toLocaleDateString()}</p>
+                        <h4 className="font-semibold text-slate-800 dark:text-white">{lab.testName}</h4>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">{new Date(lab.date).toLocaleDateString()}</p>
                       </div>
                       <div className="text-right">
-                         <span className={`inline-block px-2 py-1 text-xs rounded-full font-bold mb-1 ${lab.status === 'COMPLETED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                         <span className={`inline-block px-2 py-1 text-xs rounded-full font-bold mb-1 ${lab.status === 'COMPLETED' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300'}`}>
                            {lab.status}
                          </span>
-                         {lab.result && <p className="font-mono text-sm">{lab.result}</p>}
+                         {lab.result && <p className="font-mono text-sm text-slate-700 dark:text-slate-300">{lab.result}</p>}
                       </div>
                    </div>
                  )) : <p className="text-slate-400 italic">No lab results found.</p>}

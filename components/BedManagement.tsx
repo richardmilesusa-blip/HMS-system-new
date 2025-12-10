@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../services/database';
 import { Bed, Ward, BedStatus, Patient } from '../types';
-import { BedDouble, CheckCircle, XCircle, Clock, Filter, AlertTriangle, User, Search, ArrowRight, MoreVertical, Settings, PenTool } from 'lucide-react';
+import { BedDouble, CheckCircle, Clock, AlertTriangle, User, Search, MoreVertical } from 'lucide-react';
 
 export const BedManagement: React.FC = () => {
   const [wards, setWards] = useState<Ward[]>([]);
@@ -88,12 +88,12 @@ export const BedManagement: React.FC = () => {
     <div className="space-y-6 animate-fade-in pb-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-           <h2 className="text-2xl font-bold text-slate-800">Bed Management</h2>
-           <p className="text-slate-500">Real-time tracking of ward occupancy and patient assignment.</p>
+           <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Bed Management</h2>
+           <p className="text-slate-500 dark:text-slate-400">Real-time tracking of ward occupancy and patient assignment.</p>
         </div>
         <div className="flex gap-2">
            <select 
-             className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none"
+             className="bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 outline-none text-slate-900 dark:text-white"
              value={selectedWard}
              onChange={(e) => setSelectedWard(e.target.value)}
            >
@@ -102,7 +102,7 @@ export const BedManagement: React.FC = () => {
            </select>
            <button 
              onClick={refreshData} 
-             className="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600"
+             className="p-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300"
            >
              Refresh
            </button>
@@ -111,33 +111,33 @@ export const BedManagement: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+         <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
             <div>
-               <p className="text-slate-500 text-xs font-bold uppercase">Total Capacity</p>
-               <p className="text-2xl font-bold text-slate-800">{totalBeds}</p>
+               <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase">Total Capacity</p>
+               <p className="text-2xl font-bold text-slate-800 dark:text-white">{totalBeds}</p>
             </div>
-            <div className="bg-slate-100 p-2 rounded-lg text-slate-600"><BedDouble size={20} /></div>
+            <div className="bg-slate-100 dark:bg-slate-700 p-2 rounded-lg text-slate-600 dark:text-slate-300"><BedDouble size={20} /></div>
          </div>
-         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+         <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
             <div>
-               <p className="text-emerald-600 text-xs font-bold uppercase">Available</p>
-               <p className="text-2xl font-bold text-emerald-700">{available}</p>
+               <p className="text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase">Available</p>
+               <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{available}</p>
             </div>
-            <div className="bg-emerald-100 p-2 rounded-lg text-emerald-600"><CheckCircle size={20} /></div>
+            <div className="bg-emerald-100 dark:bg-emerald-900/30 p-2 rounded-lg text-emerald-600 dark:text-emerald-400"><CheckCircle size={20} /></div>
          </div>
-         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+         <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
             <div>
-               <p className="text-blue-600 text-xs font-bold uppercase">Occupied</p>
-               <p className="text-2xl font-bold text-blue-700">{occupied}</p>
+               <p className="text-blue-600 dark:text-blue-400 text-xs font-bold uppercase">Occupied</p>
+               <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{occupied}</p>
             </div>
-            <div className="bg-blue-100 p-2 rounded-lg text-blue-600"><User size={20} /></div>
+            <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg text-blue-600 dark:text-blue-400"><User size={20} /></div>
          </div>
-         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+         <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
             <div>
-               <p className="text-yellow-600 text-xs font-bold uppercase">To Clean</p>
-               <p className="text-2xl font-bold text-yellow-700">{cleaning}</p>
+               <p className="text-yellow-600 dark:text-yellow-400 text-xs font-bold uppercase">To Clean</p>
+               <p className="text-2xl font-bold text-yellow-700 dark:text-yellow-300">{cleaning}</p>
             </div>
-            <div className="bg-yellow-100 p-2 rounded-lg text-yellow-600"><Clock size={20} /></div>
+            <div className="bg-yellow-100 dark:bg-yellow-900/30 p-2 rounded-lg text-yellow-600 dark:text-yellow-400"><Clock size={20} /></div>
          </div>
       </div>
 
@@ -149,8 +149,8 @@ export const BedManagement: React.FC = () => {
         return (
           <div key={ward.id} className="space-y-4">
              <div className="flex items-center gap-3">
-                <h3 className="text-lg font-bold text-slate-800">{ward.name}</h3>
-                <span className="text-xs bg-slate-200 px-2 py-1 rounded text-slate-600">Floor {ward.floor}</span>
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white">{ward.name}</h3>
+                <span className="text-xs bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">Floor {ward.floor}</span>
              </div>
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {wardBeds.map(bed => (
@@ -169,16 +169,16 @@ export const BedManagement: React.FC = () => {
 
       {/* Assignment Modal */}
       {showAssignModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
-             <h3 className="text-xl font-bold mb-4">Assign Patient to {showAssignModal.roomNumber}</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200 border dark:border-slate-700">
+             <h3 className="text-xl font-bold mb-4 text-slate-800 dark:text-white">Assign Patient to {showAssignModal.roomNumber}</h3>
              
              <div className="mb-4">
-                <label className="block text-sm font-medium text-slate-700 mb-2">Select Patient</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Select Patient</label>
                 <div className="relative">
                   <Search className="absolute left-3 top-2.5 text-slate-400" size={16} />
                   <select 
-                    className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none appearance-none bg-white"
+                    className="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none appearance-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white"
                     value={selectedPatientId}
                     onChange={(e) => setSelectedPatientId(e.target.value)}
                   >
@@ -196,7 +196,7 @@ export const BedManagement: React.FC = () => {
              <div className="flex justify-end gap-3 mt-6">
                 <button 
                   onClick={() => setShowAssignModal(null)} 
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+                  className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"
                 >
                   Cancel
                 </button>
@@ -237,20 +237,20 @@ const BedCard: React.FC<{
 
   const getStatusStyles = (status: BedStatus) => {
      switch(status) {
-       case 'AVAILABLE': return 'bg-white border-slate-200 border-t-4 border-t-emerald-500';
-       case 'OCCUPIED': return 'bg-white border-slate-200 border-t-4 border-t-blue-500';
-       case 'CLEANING': return 'bg-white border-slate-200 border-t-4 border-t-yellow-500';
-       case 'MAINTENANCE': return 'bg-slate-50 border-slate-200 border-t-4 border-t-slate-400 opacity-80';
-       default: return 'bg-white';
+       case 'AVAILABLE': return 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 border-t-4 border-t-emerald-500';
+       case 'OCCUPIED': return 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 border-t-4 border-t-blue-500';
+       case 'CLEANING': return 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 border-t-4 border-t-yellow-500';
+       case 'MAINTENANCE': return 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 border-t-4 border-t-slate-400 opacity-80';
+       default: return 'bg-white dark:bg-slate-800';
      }
   };
 
   const getStatusBadge = (status: BedStatus) => {
     switch(status) {
-      case 'AVAILABLE': return <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">Available</span>;
-      case 'OCCUPIED': return <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">Occupied</span>;
-      case 'CLEANING': return <span className="text-xs font-bold text-yellow-700 bg-yellow-50 px-2 py-1 rounded-full flex items-center gap-1"><Clock size={12}/> Cleaning</span>;
-      case 'MAINTENANCE': return <span className="text-xs font-bold text-slate-600 bg-slate-200 px-2 py-1 rounded-full">Maintenance</span>;
+      case 'AVAILABLE': return <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 rounded-full">Available</span>;
+      case 'OCCUPIED': return <span className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-full">Occupied</span>;
+      case 'CLEANING': return <span className="text-xs font-bold text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/30 px-2 py-1 rounded-full flex items-center gap-1"><Clock size={12}/> Cleaning</span>;
+      case 'MAINTENANCE': return <span className="text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded-full">Maintenance</span>;
     }
   };
 
@@ -262,8 +262,8 @@ const BedCard: React.FC<{
        <div>
          <div className="flex justify-between items-start mb-2">
             <div>
-               <h4 className="font-bold text-lg text-slate-800">{bed.roomNumber}</h4>
-               <p className="text-xs text-slate-500">{bed.type} Bed</p>
+               <h4 className="font-bold text-lg text-slate-800 dark:text-white">{bed.roomNumber}</h4>
+               <p className="text-xs text-slate-500 dark:text-slate-400">{bed.type} Bed</p>
             </div>
             
             <div className="flex items-center gap-2">
@@ -273,32 +273,32 @@ const BedCard: React.FC<{
                <div className="relative" ref={menuRef}>
                   <button 
                      onClick={() => setMenuOpen(!menuOpen)} 
-                     className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded"
+                     className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 rounded"
                   >
                      <MoreVertical size={16} />
                   </button>
                   
                   {/* Context Menu Dropdown */}
                   {menuOpen && (
-                     <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-xl border border-slate-200 z-20 overflow-hidden text-sm">
-                        <div className="p-2 border-b border-slate-100 bg-slate-50 text-xs font-bold text-slate-500">Set Status</div>
+                     <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-20 overflow-hidden text-sm">
+                        <div className="p-2 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 text-xs font-bold text-slate-500 dark:text-slate-400">Set Status</div>
                         {bed.status !== 'AVAILABLE' && (
-                           <button onClick={() => { onStatusChange('AVAILABLE'); setMenuOpen(false); }} className="w-full text-left px-3 py-2 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 flex items-center gap-2">
+                           <button onClick={() => { onStatusChange('AVAILABLE'); setMenuOpen(false); }} className="w-full text-left px-3 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400 flex items-center gap-2">
                               <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Available
                            </button>
                         )}
                         {bed.status !== 'OCCUPIED' && (
-                           <button onClick={() => { onStatusChange('OCCUPIED'); setMenuOpen(false); }} className="w-full text-left px-3 py-2 hover:bg-blue-50 text-slate-700 hover:text-blue-700 flex items-center gap-2">
+                           <button onClick={() => { onStatusChange('OCCUPIED'); setMenuOpen(false); }} className="w-full text-left px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-slate-700 dark:text-slate-300 hover:text-blue-700 dark:hover:text-blue-400 flex items-center gap-2">
                               <span className="w-2 h-2 rounded-full bg-blue-500"></span> Occupied (Assign)
                            </button>
                         )}
                         {bed.status !== 'CLEANING' && (
-                           <button onClick={() => { onStatusChange('CLEANING'); setMenuOpen(false); }} className="w-full text-left px-3 py-2 hover:bg-yellow-50 text-slate-700 hover:text-yellow-700 flex items-center gap-2">
+                           <button onClick={() => { onStatusChange('CLEANING'); setMenuOpen(false); }} className="w-full text-left px-3 py-2 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 text-slate-700 dark:text-slate-300 hover:text-yellow-700 dark:hover:text-yellow-400 flex items-center gap-2">
                               <span className="w-2 h-2 rounded-full bg-yellow-500"></span> Cleaning
                            </button>
                         )}
                         {bed.status !== 'MAINTENANCE' && (
-                           <button onClick={() => { onStatusChange('MAINTENANCE'); setMenuOpen(false); }} className="w-full text-left px-3 py-2 hover:bg-slate-100 text-slate-700 flex items-center gap-2">
+                           <button onClick={() => { onStatusChange('MAINTENANCE'); setMenuOpen(false); }} className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center gap-2">
                               <span className="w-2 h-2 rounded-full bg-slate-500"></span> Maintenance
                            </button>
                         )}
@@ -310,36 +310,36 @@ const BedCard: React.FC<{
          
          {/* Patient Info or Status Message */}
          {bed.status === 'OCCUPIED' && patient ? (
-           <div className="mt-2 p-2 bg-blue-50 rounded-lg border border-blue-100">
-              <p className="font-bold text-sm text-blue-900 truncate">{patient.lastName}, {patient.firstName}</p>
-              <p className="text-xs text-blue-700 font-mono">{patient.id}</p>
+           <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-900/40">
+              <p className="font-bold text-sm text-blue-900 dark:text-blue-200 truncate">{patient.lastName}, {patient.firstName}</p>
+              <p className="text-xs text-blue-700 dark:text-blue-300 font-mono">{patient.id}</p>
               {patient.vitalsHistory[0]?.flag === 'CRITICAL' && (
-                 <div className="mt-1 flex items-center gap-1 text-[10px] text-red-600 font-bold uppercase animate-pulse">
+                 <div className="mt-1 flex items-center gap-1 text-[10px] text-red-600 dark:text-red-400 font-bold uppercase animate-pulse">
                     <AlertTriangle size={10} /> Critical
                  </div>
               )}
            </div>
          ) : bed.status === 'AVAILABLE' ? (
-            <div className="mt-4 text-center text-slate-400 text-sm">
+            <div className="mt-4 text-center text-slate-400 dark:text-slate-500 text-sm">
                Empty
             </div>
          ) : (
-            <div className="mt-4 text-center text-slate-400 text-sm italic">
+            <div className="mt-4 text-center text-slate-400 dark:text-slate-500 text-sm italic">
                {bed.status === 'CLEANING' ? 'Housekeeping notified' : 'Out of service'}
             </div>
          )}
        </div>
 
        {/* Primary Action Buttons (Bottom) */}
-       <div className="mt-4 pt-3 border-t border-slate-100 flex gap-2 justify-end">
+       <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700 flex gap-2 justify-end">
           {bed.status === 'AVAILABLE' && (
              <>
-               <button onClick={() => onStatusChange('MAINTENANCE')} className="text-xs text-slate-400 hover:text-slate-600 px-2 py-1">Maintain</button>
+               <button onClick={() => onStatusChange('MAINTENANCE')} className="text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 px-2 py-1">Maintain</button>
                <button onClick={onAssign} className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-md hover:bg-emerald-700 font-medium">Assign</button>
              </>
           )}
           {bed.status === 'OCCUPIED' && (
-             <button onClick={onDischarge} className="text-xs bg-white border border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600 hover:border-red-200 px-3 py-1.5 rounded-md font-medium transition-colors">
+             <button onClick={onDischarge} className="text-xs bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-900/50 px-3 py-1.5 rounded-md font-medium transition-colors">
                Discharge
              </button>
           )}
