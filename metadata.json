@@ -1,0 +1,5 @@
+{
+  "name": "Nexus Health OS",
+  "description": "Enterprise-grade Hospital Management System with local persistence, EMR/EHR capabilities, and AI-powered Clinical Decision Support.",
+  "requestFramePermissions": []
+}
