@@ -131,6 +131,27 @@ export interface Prescription {
   notes?: string;
 }
 
+// Admin Types
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  status: 'ACTIVE' | 'INACTIVE';
+  lastLogin?: string;
+  password?: string;
+}
+
+export interface AuditLog {
+  id: string;
+  action: string;
+  userId: string;
+  userName: string;
+  timestamp: string;
+  details: string;
+  module: string;
+}
+
 export interface AppState {
   patients: Patient[];
   doctors: Doctor[];
@@ -139,7 +160,10 @@ export interface AppState {
   appointments: Appointment[];
   medications: Medication[];
   prescriptions: Prescription[];
+  users: User[];
+  auditLogs: AuditLog[];
   currentUser: {
+    id: string;
     name: string;
     role: UserRole;
   };

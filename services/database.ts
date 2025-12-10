@@ -1,5 +1,5 @@
 
-import { Patient, Doctor, PatientStatus, UserRole, AppState, Ward, Bed, BedStatus, Appointment, AppointmentStatus, Medication, Prescription, PrescriptionStatus } from '../types';
+import { Patient, Doctor, PatientStatus, UserRole, AppState, Ward, Bed, BedStatus, Appointment, AppointmentStatus, Medication, Prescription, PrescriptionStatus, User, AuditLog } from '../types';
 
 const STORAGE_KEY = 'NEXUS_HMS_DB_V2';
 
@@ -168,6 +168,19 @@ const SEED_PRESCRIPTIONS: Prescription[] = [
   }
 ];
 
+const SEED_USERS: User[] = [
+  { id: 'U-001', name: 'Admin User', email: 'admin@nexus.hms', role: UserRole.ADMIN, status: 'ACTIVE', lastLogin: new Date().toISOString(), password: 'password123' },
+  { id: 'U-002', name: 'Dr. Gregory House', email: 'house@nexus.hms', role: UserRole.DOCTOR, status: 'ACTIVE', lastLogin: '2023-10-26T14:20:00', password: 'password123' },
+  { id: 'U-003', name: 'Nurse Joy', email: 'joy@nexus.hms', role: UserRole.NURSE, status: 'ACTIVE', lastLogin: '2023-10-27T07:00:00', password: 'password123' },
+  { id: 'U-004', name: 'Receptionist Pam', email: 'pam@nexus.hms', role: UserRole.RECEPTIONIST, status: 'ACTIVE', lastLogin: '2023-10-27T08:00:00', password: 'password123' }
+];
+
+const SEED_LOGS: AuditLog[] = [
+  { id: 'LOG-001', action: 'SYSTEM_INIT', userId: 'SYSTEM', userName: 'System', timestamp: new Date(Date.now() - 86400000).toISOString(), details: 'Database initialized', module: 'SYSTEM' },
+  { id: 'LOG-002', action: 'USER_LOGIN', userId: 'U-001', userName: 'Admin User', timestamp: new Date().toISOString(), details: 'Successful login', module: 'AUTH' },
+  { id: 'LOG-003', action: 'ADMIT_PATIENT', userId: 'U-003', userName: 'Nurse Joy', timestamp: new Date(Date.now() - 3600000).toISOString(), details: 'Admitted Patient P-1002', module: 'PATIENTS' }
+];
+
 class DatabaseService {
   private state: AppState;
 
@@ -178,7 +191,12 @@ class DatabaseService {
   private loadState(): AppState {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      // Ensure new fields exist for legacy data
+      if (!parsed.users) parsed.users = SEED_USERS;
+      if (!parsed.auditLogs) parsed.auditLogs = SEED_LOGS;
+      if (!parsed.currentUser.id) parsed.currentUser.id = 'U-001';
+      return parsed;
     }
     const initialState: AppState = {
       patients: SEED_PATIENTS,
@@ -188,7 +206,9 @@ class DatabaseService {
       appointments: SEED_APPOINTMENTS,
       medications: SEED_MEDICATIONS,
       prescriptions: SEED_PRESCRIPTIONS,
-      currentUser: { name: 'Admin User', role: UserRole.ADMIN },
+      users: SEED_USERS,
+      auditLogs: SEED_LOGS,
+      currentUser: { id: 'U-001', name: 'Admin User', role: UserRole.ADMIN },
       notifications: [
         { id: 'n1', message: 'System Maintenance scheduled for midnight.', type: 'info', read: false },
         { id: 'n2', message: 'Critical Lab Result: P-1002', type: 'error', read: false }
@@ -215,6 +235,7 @@ class DatabaseService {
 
   addPatient(patient: Patient): void {
     const newState = { ...this.state, patients: [patient, ...this.state.patients] };
+    this.logAction('CREATE_PATIENT', `Registered patient ${patient.id}`, 'PATIENTS');
     this.saveState(newState);
   }
 
@@ -282,6 +303,7 @@ class DatabaseService {
       const newBeds = this.state.beds.map(b => b.id === bedId ? updatedBed : (b.id === patient.bedId ? { ...b, status: 'CLEANING' as BedStatus, patientId: undefined } : b));
       const newPatients = this.state.patients.map(p => p.id === patientId ? updatedPatient : p);
 
+      this.logAction('ASSIGN_BED', `Assigned patient ${patientId} to bed ${bedId}`, 'BEDS');
       this.saveState({ ...this.state, beds: newBeds, patients: newPatients });
     }
   }
@@ -302,6 +324,7 @@ class DatabaseService {
          newPatients = this.state.patients.map(p => p.id === patientId ? updatedPatient : p);
        }
 
+       this.logAction('DISCHARGE_PATIENT', `Discharged patient ${patientId} from bed ${bedId}`, 'BEDS');
        this.saveState({ ...this.state, beds: newBeds, patients: newPatients });
     }
   }
@@ -320,6 +343,7 @@ class DatabaseService {
 
   addAppointment(appt: Appointment): void {
     const newState = { ...this.state, appointments: [...(this.state.appointments || []), appt] };
+    this.logAction('CREATE_APPT', `Scheduled appointment ${appt.id}`, 'APPOINTMENTS');
     this.saveState(newState);
   }
 
@@ -355,6 +379,7 @@ class DatabaseService {
 
   addMedication(med: Medication): void {
     const newState = { ...this.state, medications: [med, ...(this.state.medications || [])] };
+    this.logAction('ADD_MEDICATION', `Added medication ${med.name}`, 'PHARMACY');
     this.saveState(newState);
   }
 
@@ -388,8 +413,64 @@ class DatabaseService {
     const newPrescriptions = [...prescriptions];
     newPrescriptions[pIndex] = { ...prescription, status: 'DISPENSED', dispensedAt: new Date().toISOString() };
 
+    this.logAction('DISPENSE', `Dispensed RX ${id}`, 'PHARMACY');
     this.saveState({ ...this.state, medications: newMeds, prescriptions: newPrescriptions });
     return { success: true, message: 'Medication dispensed successfully' };
+  }
+
+  // --- User & Admin Methods ---
+
+  getUsers(): User[] {
+    return this.state.users || [];
+  }
+
+  addUser(user: User): void {
+    const newState = { ...this.state, users: [...(this.state.users || []), user] };
+    this.logAction('CREATE_USER', `Created user ${user.name} (${user.role})`, 'ADMIN');
+    this.saveState(newState);
+  }
+
+  updateUserStatus(userId: string, status: 'ACTIVE' | 'INACTIVE'): void {
+    const users = this.state.users || [];
+    const index = users.findIndex(u => u.id === userId);
+    if (index !== -1) {
+      const newUsers = [...users];
+      newUsers[index] = { ...newUsers[index], status };
+      this.logAction('UPDATE_USER', `Changed status of ${userId} to ${status}`, 'ADMIN');
+      this.saveState({ ...this.state, users: newUsers });
+    }
+  }
+
+  updateUserPassword(userId: string, newPassword: string): void {
+    const users = this.state.users || [];
+    const index = users.findIndex(u => u.id === userId);
+    if (index !== -1) {
+      const newUsers = [...users];
+      newUsers[index] = { ...newUsers[index], password: newPassword };
+      this.logAction('CHANGE_PASSWORD', `Changed password for user ${newUsers[index].name}`, 'ADMIN');
+      this.saveState({ ...this.state, users: newUsers });
+    }
+  }
+
+  getAuditLogs(): AuditLog[] {
+    return this.state.auditLogs || [];
+  }
+
+  private logAction(action: string, details: string, module: string) {
+    const newLog: AuditLog = {
+      id: `LOG-${Date.now()}`,
+      action,
+      userId: this.state.currentUser.id,
+      userName: this.state.currentUser.name,
+      timestamp: new Date().toISOString(),
+      details,
+      module
+    };
+    // Keep only last 100 logs
+    const newLogs = [newLog, ...(this.state.auditLogs || [])].slice(0, 100);
+    // Note: We don't save state here to avoid recursive save calls if called from saveState,
+    // but typically we should. For this simple mock, we update state object directly before save.
+    this.state.auditLogs = newLogs; 
   }
 
   // --- Stats ---

@@ -7,6 +7,7 @@ import { BedManagement } from './components/BedManagement';
 import { AppointmentScheduler } from './components/AppointmentScheduler';
 import { PharmacyModule } from './components/PharmacyModule';
 import { ClinicalSupport } from './components/ClinicalSupport';
+import { SystemAdmin } from './components/SystemAdmin';
 import { ViewState } from './types';
 import { Calendar, Pill, Settings } from 'lucide-react';
 import { db } from './services/database';
@@ -57,7 +58,7 @@ const App: React.FC = () => {
           </div>
         );
       case 'SETTINGS':
-        return <PlaceholderView title="System Administration" icon={Settings} desc="User management, audit logs, and system configuration." />;
+        return <SystemAdmin />;
       default:
         return <Dashboard />;
     }
