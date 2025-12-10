@@ -7,13 +7,13 @@ import {
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 const StatCard = ({ title, value, subtext, icon: Icon, colorClass }: any) => (
-  <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-start justify-between hover:shadow-md transition-shadow">
+  <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 flex items-start justify-between hover:shadow-md transition-shadow">
     <div>
-      <p className="text-sm font-medium text-slate-500 mb-1">{title}</p>
-      <h3 className="text-2xl font-bold text-slate-800">{value}</h3>
+      <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">{title}</p>
+      <h3 className="text-2xl font-bold text-slate-800 dark:text-white">{value}</h3>
       {subtext && <p className={`text-xs mt-2 ${colorClass}`}>{subtext}</p>}
     </div>
-    <div className={`p-3 rounded-lg ${colorClass} bg-opacity-10`}>
+    <div className={`p-3 rounded-lg ${colorClass} bg-opacity-10 dark:bg-opacity-20`}>
       <Icon className={`w-6 h-6 ${colorClass.replace('text-', 'stroke-')}`} />
     </div>
   </div>
@@ -36,8 +36,8 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-slate-800">Hospital Overview</h2>
-        <div className="text-sm text-slate-500">Last updated: {new Date().toLocaleTimeString()}</div>
+        <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Hospital Overview</h2>
+        <div className="text-sm text-slate-500 dark:text-slate-400">Last updated: {new Date().toLocaleTimeString()}</div>
       </div>
 
       {/* KPI Grid */}
@@ -74,17 +74,17 @@ export const Dashboard: React.FC = () => {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 lg:col-span-2">
-          <h3 className="text-lg font-semibold text-slate-800 mb-4">Patient Flow Analytics</h3>
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 lg:col-span-2">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Patient Flow Analytics</h3>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={occupancyData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                <YAxis axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" strokeOpacity={0.5} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} />
+                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8'}} />
                 <Tooltip 
-                    cursor={{ fill: '#f1f5f9' }}
-                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    cursor={{ fill: '#f1f5f9', opacity: 0.2 }}
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', backgroundColor: '#fff' }}
                 />
                 <Bar dataKey="admitted" name="Inpatient" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={20} />
                 <Bar dataKey="emergency" name="Emergency" fill="#ef4444" radius={[4, 4, 0, 0]} barSize={20} />
@@ -93,8 +93,8 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-          <h3 className="text-lg font-semibold text-slate-800 mb-4">Department Status</h3>
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Department Status</h3>
           <div className="space-y-4">
             {[
               { name: 'ICU', cap: '95%', color: 'bg-red-500' },
@@ -105,22 +105,22 @@ export const Dashboard: React.FC = () => {
             ].map((dept) => (
               <div key={dept.name}>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="font-medium text-slate-700">{dept.name}</span>
-                  <span className="text-slate-500">{dept.cap}</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-200">{dept.name}</span>
+                  <span className="text-slate-500 dark:text-slate-400">{dept.cap}</span>
                 </div>
-                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                   <div className={`h-full ${dept.color}`} style={{ width: dept.cap }}></div>
                 </div>
               </div>
             ))}
           </div>
           
-          <div className="mt-8 pt-6 border-t border-slate-100">
+          <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-700">
              <div className="flex items-center justify-between">
-                <h4 className="font-medium text-slate-700">Financial Revenue</h4>
-                <span className="text-emerald-600 font-bold text-lg">$124.5k</span>
+                <h4 className="font-medium text-slate-700 dark:text-slate-200">Financial Revenue</h4>
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold text-lg">$124.5k</span>
              </div>
-             <p className="text-xs text-slate-500 mt-1">Daily estimate based on billing</p>
+             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Daily estimate based on billing</p>
           </div>
         </div>
       </div>

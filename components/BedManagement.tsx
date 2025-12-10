@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { db } from '../services/database';
 import { Bed, Ward, BedStatus, Patient } from '../types';
-import { BedDouble, CheckCircle, XCircle, Clock, Filter, AlertTriangle, User, Search, ArrowRight } from 'lucide-react';
+import { BedDouble, CheckCircle, XCircle, Clock, Filter, AlertTriangle, User, Search, ArrowRight, MoreVertical, Settings, PenTool } from 'lucide-react';
 
 export const BedManagement: React.FC = () => {
   const [wards, setWards] = useState<Ward[]>([]);
@@ -27,11 +27,42 @@ export const BedManagement: React.FC = () => {
   }, []);
 
   const handleStatusChange = (bed: Bed, newStatus: BedStatus) => {
+    if (newStatus === bed.status) return;
+
+    if (newStatus === 'OCCUPIED') {
+       // Trigger the assignment modal instead of setting status directly
+       setShowAssignModal(bed);
+       return;
+    }
+
     if (newStatus === 'AVAILABLE' && bed.status === 'OCCUPIED') {
-       // Should use discharge flow instead
-       db.dischargePatientFromBed(bed.id);
+       // Should use discharge flow if currently occupied
+       if (confirm(`Discharge patient from bed ${bed.roomNumber}?`)) {
+          db.dischargePatientFromBed(bed.id);
+       } else {
+          return; 
+       }
     } else {
-       db.updateBed({ ...bed, status: newStatus });
+       // If clearing a patient without discharge flow (manual override), we should be careful, 
+       // but for manual status set we assume user knows what they are doing or it's a fix.
+       // However, to keep DB consistent, if we force status away from OCCUPIED, we should clear patientId.
+       const updatedBed = { ...bed, status: newStatus };
+       if (bed.status === 'OCCUPIED') {
+           // If we are manually forcing it free, discharge logic is safer
+           db.dischargePatientFromBed(bed.id);
+           // Then apply the specific status requested if it wasn't just "AVAILABLE" (which discharge handles)
+           if (newStatus !== 'AVAILABLE' && newStatus !== 'CLEANING') { // Discharge sets to CLEANING usually
+              db.updateBed({ ...updatedBed, patientId: undefined });
+           } else if (newStatus !== 'CLEANING') {
+              // If user wanted AVAILABLE, discharge sets to CLEANING, so we might need to double update
+              // But standard flow: Occupied -> Cleaning -> Available. 
+              // If user picks "Maintenance", discharge then update.
+              const dischargeBed = db.getBedById(bed.id); // reload after discharge
+              if (dischargeBed) db.updateBed({ ...dischargeBed, status: newStatus });
+           }
+       } else {
+           db.updateBed(updatedBed);
+       }
     }
     refreshData();
   };
@@ -126,11 +157,9 @@ export const BedManagement: React.FC = () => {
                    <BedCard 
                       key={bed.id} 
                       bed={bed} 
-                      onAction={() => handleStatusChange(bed, 'CLEANING')} // Simplified action
                       onAssign={() => setShowAssignModal(bed)}
                       onDischarge={() => { db.dischargePatientFromBed(bed.id); refreshData(); }}
-                      onClean={() => handleStatusChange(bed, 'AVAILABLE')}
-                      onMaintenance={() => handleStatusChange(bed, 'MAINTENANCE')}
+                      onStatusChange={(status) => handleStatusChange(bed, status)}
                    />
                 ))}
              </div>
@@ -189,13 +218,23 @@ export const BedManagement: React.FC = () => {
 // Sub-component for individual bed card
 const BedCard: React.FC<{ 
   bed: Bed; 
-  onAction: () => void;
   onAssign: () => void;
   onDischarge: () => void;
-  onClean: () => void;
-  onMaintenance: () => void;
-}> = ({ bed, onAssign, onDischarge, onClean, onMaintenance }) => {
-  
+  onStatusChange: (status: BedStatus) => void;
+}> = ({ bed, onAssign, onDischarge, onStatusChange }) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const getStatusStyles = (status: BedStatus) => {
      switch(status) {
        case 'AVAILABLE': return 'bg-white border-slate-200 border-t-4 border-t-emerald-500';
@@ -218,16 +257,58 @@ const BedCard: React.FC<{
   const patient = bed.patientId ? db.getPatientById(bed.patientId) : null;
 
   return (
-    <div className={`rounded-xl shadow-sm border p-4 flex flex-col justify-between h-48 transition-all hover:shadow-md ${getStatusStyles(bed.status)}`}>
+    <div className={`rounded-xl shadow-sm border p-4 flex flex-col justify-between h-48 transition-all hover:shadow-md relative ${getStatusStyles(bed.status)}`}>
+       {/* Top Row: Room Info & Status */}
        <div>
          <div className="flex justify-between items-start mb-2">
             <div>
                <h4 className="font-bold text-lg text-slate-800">{bed.roomNumber}</h4>
                <p className="text-xs text-slate-500">{bed.type} Bed</p>
             </div>
-            {getStatusBadge(bed.status)}
+            
+            <div className="flex items-center gap-2">
+               {getStatusBadge(bed.status)}
+               
+               {/* Context Menu Trigger */}
+               <div className="relative" ref={menuRef}>
+                  <button 
+                     onClick={() => setMenuOpen(!menuOpen)} 
+                     className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded"
+                  >
+                     <MoreVertical size={16} />
+                  </button>
+                  
+                  {/* Context Menu Dropdown */}
+                  {menuOpen && (
+                     <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-xl border border-slate-200 z-20 overflow-hidden text-sm">
+                        <div className="p-2 border-b border-slate-100 bg-slate-50 text-xs font-bold text-slate-500">Set Status</div>
+                        {bed.status !== 'AVAILABLE' && (
+                           <button onClick={() => { onStatusChange('AVAILABLE'); setMenuOpen(false); }} className="w-full text-left px-3 py-2 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Available
+                           </button>
+                        )}
+                        {bed.status !== 'OCCUPIED' && (
+                           <button onClick={() => { onStatusChange('OCCUPIED'); setMenuOpen(false); }} className="w-full text-left px-3 py-2 hover:bg-blue-50 text-slate-700 hover:text-blue-700 flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-blue-500"></span> Occupied (Assign)
+                           </button>
+                        )}
+                        {bed.status !== 'CLEANING' && (
+                           <button onClick={() => { onStatusChange('CLEANING'); setMenuOpen(false); }} className="w-full text-left px-3 py-2 hover:bg-yellow-50 text-slate-700 hover:text-yellow-700 flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-yellow-500"></span> Cleaning
+                           </button>
+                        )}
+                        {bed.status !== 'MAINTENANCE' && (
+                           <button onClick={() => { onStatusChange('MAINTENANCE'); setMenuOpen(false); }} className="w-full text-left px-3 py-2 hover:bg-slate-100 text-slate-700 flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-slate-500"></span> Maintenance
+                           </button>
+                        )}
+                     </div>
+                  )}
+               </div>
+            </div>
          </div>
          
+         {/* Patient Info or Status Message */}
          {bed.status === 'OCCUPIED' && patient ? (
            <div className="mt-2 p-2 bg-blue-50 rounded-lg border border-blue-100">
               <p className="font-bold text-sm text-blue-900 truncate">{patient.lastName}, {patient.firstName}</p>
@@ -249,10 +330,11 @@ const BedCard: React.FC<{
          )}
        </div>
 
+       {/* Primary Action Buttons (Bottom) */}
        <div className="mt-4 pt-3 border-t border-slate-100 flex gap-2 justify-end">
           {bed.status === 'AVAILABLE' && (
              <>
-               <button onClick={onMaintenance} className="text-xs text-slate-400 hover:text-slate-600 px-2 py-1">Maintain</button>
+               <button onClick={() => onStatusChange('MAINTENANCE')} className="text-xs text-slate-400 hover:text-slate-600 px-2 py-1">Maintain</button>
                <button onClick={onAssign} className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-md hover:bg-emerald-700 font-medium">Assign</button>
              </>
           )}
@@ -262,12 +344,12 @@ const BedCard: React.FC<{
              </button>
           )}
           {bed.status === 'CLEANING' && (
-             <button onClick={onClean} className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-md hover:bg-emerald-700 font-medium w-full flex items-center justify-center gap-1">
+             <button onClick={() => onStatusChange('AVAILABLE')} className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-md hover:bg-emerald-700 font-medium w-full flex items-center justify-center gap-1">
                <CheckCircle size={12} /> Mark Clean
              </button>
           )}
           {bed.status === 'MAINTENANCE' && (
-             <button onClick={onClean} className="text-xs bg-slate-600 text-white px-3 py-1.5 rounded-md hover:bg-slate-700 font-medium">
+             <button onClick={() => onStatusChange('AVAILABLE')} className="text-xs bg-slate-600 text-white px-3 py-1.5 rounded-md hover:bg-slate-700 font-medium">
                Reopen
              </button>
           )}

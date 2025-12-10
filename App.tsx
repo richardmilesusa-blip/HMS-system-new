@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from './components/Layout';
 import { Dashboard } from './components/Dashboard';
 import { PatientModule } from './components/PatientModule';
@@ -12,27 +11,20 @@ import { ViewState } from './types';
 import { Calendar, Pill, Settings } from 'lucide-react';
 import { db } from './services/database';
 
-// Placeholder components for views not fully implemented in this demo
-const PlaceholderView: React.FC<{ title: string; icon: any; desc: string }> = ({ title, icon: Icon, desc }) => (
-  <div className="flex flex-col items-center justify-center h-full text-center p-12 bg-white rounded-xl border border-slate-200 border-dashed animate-fade-in">
-    <div className="p-6 bg-slate-50 rounded-full mb-6">
-      <Icon size={48} className="text-slate-300" />
-    </div>
-    <h2 className="text-2xl font-bold text-slate-800 mb-2">{title}</h2>
-    <p className="text-slate-500 max-w-md">{desc}</p>
-    <button className="mt-6 px-6 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-colors">
-      Initialize Module
-    </button>
-  </div>
-);
-
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>('DASHBOARD');
 
-  // Initialize DB on mount
-  React.useEffect(() => {
-    // Accessing db property triggers initialization
+  // Initialize DB and Theme on mount
+  useEffect(() => {
     console.log("System initialized with patients:", db.getPatients().length);
+    
+    // Check local storage for theme
+    const theme = localStorage.getItem('theme');
+    if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }, []);
 
   const renderContent = () => {
@@ -51,8 +43,8 @@ const App: React.FC = () => {
         return (
           <div className="max-w-4xl mx-auto h-full flex flex-col">
              <div className="mb-6">
-               <h2 className="text-2xl font-bold text-slate-800">General Medical Consultant</h2>
-               <p className="text-slate-500">Ask general medical questions or get administrative assistance.</p>
+               <h2 className="text-2xl font-bold text-slate-800 dark:text-white">General Medical Consultant</h2>
+               <p className="text-slate-500 dark:text-slate-400">Ask general medical questions or get administrative assistance.</p>
              </div>
              <ClinicalSupport />
           </div>
