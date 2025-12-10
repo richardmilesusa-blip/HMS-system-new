@@ -10,8 +10,9 @@ import { ClinicalSupport } from './components/ClinicalSupport';
 import { SystemAdmin } from './components/SystemAdmin';
 import { LoginPage } from './components/LoginPage';
 import { ViewState, User } from './types';
-import { Calendar, Pill, Settings } from 'lucide-react';
 import { db } from './services/database';
+import { hasAccess } from './utils/permissions';
+import { Lock } from 'lucide-react';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>('DASHBOARD');
@@ -32,6 +33,7 @@ const App: React.FC = () => {
 
   const handleLogin = (u: User) => {
     setUser(u);
+    setCurrentView('DASHBOARD'); // Reset to dashboard on login
   };
 
   const handleLogout = () => {
@@ -39,7 +41,31 @@ const App: React.FC = () => {
     setCurrentView('DASHBOARD');
   };
 
+  // Secure content rendering
   const renderContent = () => {
+    if (!user) return null;
+
+    // Security Check: If user doesn't have access to this view, show unauthorized
+    if (!hasAccess(user.role, currentView)) {
+       return (
+         <div className="flex flex-col items-center justify-center h-full text-center">
+            <div className="bg-red-50 dark:bg-red-900/20 p-6 rounded-full mb-4">
+               <Lock size={48} className="text-red-500" />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Access Denied</h2>
+            <p className="text-slate-500 dark:text-slate-400 max-w-md">
+               You do not have permission to view this module. Please contact your system administrator if you believe this is an error.
+            </p>
+            <button 
+               onClick={() => setCurrentView('DASHBOARD')}
+               className="mt-6 px-4 py-2 bg-slate-800 dark:bg-slate-700 text-white rounded-lg hover:bg-slate-700 dark:hover:bg-slate-600 transition-colors"
+            >
+               Return to Dashboard
+            </button>
+         </div>
+       );
+    }
+
     switch (currentView) {
       case 'DASHBOARD':
         return <Dashboard />;

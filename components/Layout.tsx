@@ -1,10 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { ViewState, User } from '../types';
+import { hasAccess } from '../utils/permissions';
 import { 
   LayoutDashboard, Users, Calendar, Pill, 
   Stethoscope, Settings, Bell, Search, Menu, LogOut,
-  Hexagon, BedDouble, X
+  Hexagon, BedDouble, X, Lock
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -56,6 +57,22 @@ export const Layout: React.FC<LayoutProps> = ({ currentView, onNavigate, onLogou
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Helper to render nav item only if user has access
+  const RenderNavItem = (props: { view: ViewState, label: string, icon: any }) => {
+    if (!currentUser || !hasAccess(currentUser.role, props.view)) return null;
+    
+    return (
+      <NavItem 
+        view={props.view} 
+        label={props.label} 
+        icon={props.icon} 
+        active={currentView === props.view} 
+        onClick={onNavigate} 
+        collapsed={!sidebarOpen && !isMobile} 
+      />
+    );
+  };
+
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-900 overflow-hidden relative">
       
@@ -94,15 +111,16 @@ export const Layout: React.FC<LayoutProps> = ({ currentView, onNavigate, onLogou
         </div>
 
         <div className="flex-1 py-6 px-3 space-y-1 overflow-y-auto overflow-x-hidden scrollbar-thin">
-           <NavItem view="DASHBOARD" label="Dashboard" icon={LayoutDashboard} active={currentView === 'DASHBOARD'} onClick={onNavigate} collapsed={!sidebarOpen && !isMobile} />
-           <NavItem view="PATIENTS" label="Patients & EMR" icon={Users} active={currentView === 'PATIENTS'} onClick={onNavigate} collapsed={!sidebarOpen && !isMobile} />
-           <NavItem view="BEDS" label="Bed Management" icon={BedDouble} active={currentView === 'BEDS'} onClick={onNavigate} collapsed={!sidebarOpen && !isMobile} />
-           <NavItem view="APPOINTMENTS" label="Appointments" icon={Calendar} active={currentView === 'APPOINTMENTS'} onClick={onNavigate} collapsed={!sidebarOpen && !isMobile} />
-           <NavItem view="PHARMACY" label="Pharmacy" icon={Pill} active={currentView === 'PHARMACY'} onClick={onNavigate} collapsed={!sidebarOpen && !isMobile} />
-           <NavItem view="CLINICAL_AI" label="Clinical AI" icon={Stethoscope} active={currentView === 'CLINICAL_AI'} onClick={onNavigate} collapsed={!sidebarOpen && !isMobile} />
+           <RenderNavItem view="DASHBOARD" label="Dashboard" icon={LayoutDashboard} />
+           <RenderNavItem view="PATIENTS" label="Patients & EMR" icon={Users} />
+           <RenderNavItem view="BEDS" label="Bed Management" icon={BedDouble} />
+           <RenderNavItem view="APPOINTMENTS" label="Appointments" icon={Calendar} />
+           <RenderNavItem view="PHARMACY" label="Pharmacy" icon={Pill} />
+           <RenderNavItem view="CLINICAL_AI" label="Clinical AI" icon={Stethoscope} />
            
+           {/* Settings is special, handled by permission check inside RenderNavItem */}
            <div className="pt-6 mt-6 border-t border-slate-100 dark:border-slate-700">
-             <NavItem view="SETTINGS" label="Settings" icon={Settings} active={currentView === 'SETTINGS'} onClick={onNavigate} collapsed={!sidebarOpen && !isMobile} />
+             <RenderNavItem view="SETTINGS" label="Settings" icon={Settings} />
            </div>
         </div>
 
@@ -136,10 +154,17 @@ export const Layout: React.FC<LayoutProps> = ({ currentView, onNavigate, onLogou
                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-slate-800"></span>
                 </button>
                 <div 
-                   className="h-8 w-8 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-700 cursor-help"
-                   title={currentUser?.name || "User"}
+                   className="flex items-center gap-3 pl-3 border-l border-slate-100 dark:border-slate-700"
                 >
-                   {currentUser ? currentUser.name.charAt(0) : 'U'}
+                   <div className="text-right hidden md:block">
+                      <p className="text-sm font-bold text-slate-800 dark:text-white">{currentUser?.name}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase">{currentUser?.role}</p>
+                   </div>
+                   <div 
+                      className="h-8 w-8 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-700"
+                   >
+                      {currentUser ? currentUser.name.charAt(0) : 'U'}
+                   </div>
                 </div>
             </div>
          </header>
