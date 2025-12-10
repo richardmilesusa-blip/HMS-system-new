@@ -424,6 +424,10 @@ class DatabaseService {
     return this.state.users || [];
   }
 
+  validateUser(email: string, password: string): User | undefined {
+    return this.state.users?.find(u => u.email === email && u.password === password && u.status === 'ACTIVE');
+  }
+
   addUser(user: User): void {
     const newState = { ...this.state, users: [...(this.state.users || []), user] };
     this.logAction('CREATE_USER', `Created user ${user.name} (${user.role})`, 'ADMIN');

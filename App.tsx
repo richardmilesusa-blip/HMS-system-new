@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Layout } from './components/Layout';
 import { Dashboard } from './components/Dashboard';
@@ -7,12 +8,14 @@ import { AppointmentScheduler } from './components/AppointmentScheduler';
 import { PharmacyModule } from './components/PharmacyModule';
 import { ClinicalSupport } from './components/ClinicalSupport';
 import { SystemAdmin } from './components/SystemAdmin';
-import { ViewState } from './types';
+import { LoginPage } from './components/LoginPage';
+import { ViewState, User } from './types';
 import { Calendar, Pill, Settings } from 'lucide-react';
 import { db } from './services/database';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>('DASHBOARD');
+  const [user, setUser] = useState<User | null>(null);
 
   // Initialize DB and Theme on mount
   useEffect(() => {
@@ -26,6 +29,15 @@ const App: React.FC = () => {
       document.documentElement.classList.remove('dark');
     }
   }, []);
+
+  const handleLogin = (u: User) => {
+    setUser(u);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setCurrentView('DASHBOARD');
+  };
 
   const renderContent = () => {
     switch (currentView) {
@@ -56,8 +68,12 @@ const App: React.FC = () => {
     }
   };
 
+  if (!user) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
+
   return (
-    <Layout currentView={currentView} onNavigate={setCurrentView}>
+    <Layout currentView={currentView} onNavigate={setCurrentView} onLogout={handleLogout} currentUser={user}>
        {renderContent()}
     </Layout>
   );

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ViewState } from '../types';
+import { ViewState, User } from '../types';
 import { 
   LayoutDashboard, Users, Calendar, Pill, 
   Stethoscope, Settings, Bell, Search, Menu, LogOut,
@@ -10,6 +10,8 @@ import {
 interface LayoutProps {
   currentView: ViewState;
   onNavigate: (view: ViewState) => void;
+  onLogout: () => void;
+  currentUser?: User | null;
   children: React.ReactNode;
 }
 
@@ -38,7 +40,7 @@ const NavItem = ({ view, label, icon: Icon, active, onClick, collapsed }: any) =
   </button>
 );
 
-export const Layout: React.FC<LayoutProps> = ({ currentView, onNavigate, children }) => {
+export const Layout: React.FC<LayoutProps> = ({ currentView, onNavigate, onLogout, currentUser, children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -106,6 +108,7 @@ export const Layout: React.FC<LayoutProps> = ({ currentView, onNavigate, childre
 
         <div className="p-4 border-t border-slate-100 dark:border-slate-700 whitespace-nowrap overflow-hidden flex-shrink-0">
            <button 
+             onClick={onLogout}
              className={`flex items-center gap-3 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors w-full rounded-lg py-2 ${(!sidebarOpen && !isMobile) ? 'justify-center' : 'px-2'}`}
              title={(!sidebarOpen && !isMobile) ? "Sign Out" : undefined}
            >
@@ -132,8 +135,11 @@ export const Layout: React.FC<LayoutProps> = ({ currentView, onNavigate, childre
                    <Bell size={20} />
                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-slate-800"></span>
                 </button>
-                <div className="h-8 w-8 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-700">
-                   DA
+                <div 
+                   className="h-8 w-8 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-700 cursor-help"
+                   title={currentUser?.name || "User"}
+                >
+                   {currentUser ? currentUser.name.charAt(0) : 'U'}
                 </div>
             </div>
          </header>
