@@ -3,7 +3,8 @@ export enum UserRole {
   ADMIN = 'ADMIN',
   DOCTOR = 'DOCTOR',
   NURSE = 'NURSE',
-  RECEPTIONIST = 'RECEPTIONIST'
+  RECEPTIONIST = 'RECEPTIONIST',
+  MEDICAL_RECORDS = 'MEDICAL_RECORDS'
 }
 
 export enum PatientStatus {
@@ -21,6 +22,7 @@ export enum Urgency {
 }
 
 export interface Vitals {
+  id?: string;
   date: string;
   heartRate: number;
   bpSystolic: number;
@@ -29,6 +31,7 @@ export interface Vitals {
   spo2: number;
   respRate: number;
   flag?: 'NORMAL' | 'ABNORMAL' | 'CRITICAL';
+  recordedBy?: string;
 }
 
 export interface LabResult {
@@ -38,6 +41,27 @@ export interface LabResult {
   status: 'PENDING' | 'COMPLETED';
   result?: string;
   flag?: 'NORMAL' | 'ABNORMAL' | 'CRITICAL';
+  orderedBy?: string;
+}
+
+export interface ProgressNote {
+  id: string;
+  date: string;
+  authorId: string;
+  authorName: string;
+  authorRole: string;
+  content: string;
+  type: 'GENERAL' | 'NURSING' | 'PHYSICIAN' | 'EMERGENCY';
+}
+
+export interface TreatmentPlan {
+  id: string;
+  startDate: string;
+  diagnosis: string;
+  goals: string[];
+  instructions: string;
+  active: boolean;
+  lastUpdated: string;
 }
 
 export interface Patient {
@@ -52,6 +76,8 @@ export interface Patient {
   diagnosis: string[];
   vitalsHistory: Vitals[];
   labResults: LabResult[];
+  progressNotes: ProgressNote[];
+  treatmentPlan?: TreatmentPlan;
   assignedDoctorId?: string;
   roomNumber?: string;
   bedId?: string;
@@ -99,6 +125,19 @@ export interface Appointment {
   type: AppointmentType;
   status: AppointmentStatus;
   notes?: string;
+}
+
+// Roster Types
+export interface Shift {
+  id: string;
+  userId: string;
+  userName: string;
+  userRole: UserRole;
+  date: string; // YYYY-MM-DD
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+  type: 'DAY' | 'NIGHT' | 'ON_CALL';
+  location: string;
 }
 
 // Pharmacy & Inventory Types
@@ -158,6 +197,7 @@ export interface AppState {
   wards: Ward[];
   beds: Bed[];
   appointments: Appointment[];
+  shifts: Shift[];
   medications: Medication[];
   prescriptions: Prescription[];
   users: User[];
@@ -170,4 +210,4 @@ export interface AppState {
   notifications: Array<{id: string, message: string, type: 'info'|'warning'|'error', read: boolean}>;
 }
 
-export type ViewState = 'DASHBOARD' | 'PATIENTS' | 'BEDS' | 'APPOINTMENTS' | 'PHARMACY' | 'CLINICAL_AI' | 'SETTINGS';
+export type ViewState = 'DASHBOARD' | 'PATIENTS' | 'BEDS' | 'APPOINTMENTS' | 'ROSTER' | 'PHARMACY' | 'CLINICAL_AI' | 'SETTINGS';

@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { db } from '../services/database';
-import { Medication, Prescription, PrescriptionStatus, MedicationType } from '../types';
-import { Pill, AlertTriangle, CheckCircle, Search, Clock, FileText, RefreshCw, XCircle, Plus } from 'lucide-react';
+import { Medication, Prescription, PrescriptionStatus, MedicationType, UserRole } from '../types';
+import { Pill, AlertTriangle, CheckCircle, Search, Clock, FileText, RefreshCw, XCircle, Plus, Edit } from 'lucide-react';
 
 export const PharmacyModule: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'PRESCRIPTIONS' | 'INVENTORY'>('PRESCRIPTIONS');
@@ -45,6 +45,10 @@ const PrescriptionList: React.FC = () => {
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | PrescriptionStatus>('ALL');
+  const [editPrescription, setEditPrescription] = useState<Prescription | null>(null);
+
+  const currentUser = db.getCurrentUser();
+  const canEdit = currentUser.role === UserRole.ADMIN || currentUser.role === UserRole.DOCTOR;
 
   const refreshData = () => {
     setPrescriptions(db.getPrescriptions());
@@ -138,6 +142,15 @@ const PrescriptionList: React.FC = () => {
                            <span className="text-xs font-bold text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/30 px-2 py-1 rounded-full flex items-center gap-1">
                              <Clock size={12} /> Pending
                            </span>
+                           {canEdit && (
+                             <button
+                               onClick={() => setEditPrescription(p)}
+                               className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 dark:text-slate-400 dark:hover:text-blue-400 rounded-lg transition-colors"
+                               title="Edit Prescription"
+                             >
+                               <Edit size={16} />
+                             </button>
+                           )}
                            <button 
                              onClick={() => handleDispense(p.id)}
                              className="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-md hover:bg-emerald-700 font-medium transition-colors"
@@ -167,8 +180,103 @@ const PrescriptionList: React.FC = () => {
           </div>
         )}
       </div>
+
+      {editPrescription && (
+         <EditPrescriptionModal 
+            prescription={editPrescription} 
+            onClose={() => setEditPrescription(null)} 
+            onSave={() => { refreshData(); setEditPrescription(null); }}
+         />
+      )}
     </div>
   );
+};
+
+const EditPrescriptionModal: React.FC<{ 
+   prescription: Prescription; 
+   onClose: () => void; 
+   onSave: () => void; 
+}> = ({ prescription, onClose, onSave }) => {
+   const [formData, setFormData] = useState({
+      medicationId: prescription.medicationId,
+      dosage: prescription.dosage,
+      quantity: prescription.quantity,
+      notes: prescription.notes || ''
+   });
+   
+   const medications = db.getMedications();
+
+   const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      const updated = {
+         ...prescription,
+         medicationId: formData.medicationId,
+         dosage: formData.dosage,
+         quantity: formData.quantity,
+         notes: formData.notes
+      };
+      db.updatePrescription(updated);
+      onSave();
+   };
+
+   return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-md p-6 animate-in fade-in zoom-in duration-200 border dark:border-slate-700">
+          <div className="flex justify-between items-center mb-6">
+             <h3 className="text-xl font-bold text-slate-800 dark:text-white">Edit Prescription</h3>
+             <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><XCircle size={24} /></button>
+          </div>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+             <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Medication</label>
+                <select 
+                   value={formData.medicationId} 
+                   onChange={e => setFormData({...formData, medicationId: e.target.value})}
+                   className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white"
+                >
+                   {medications.map(m => (
+                      <option key={m.id} value={m.id}>{m.name} ({m.strength}) - Stock: {m.stock}</option>
+                   ))}
+                </select>
+             </div>
+             <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Dosage</label>
+                <input 
+                   required 
+                   value={formData.dosage} 
+                   onChange={e => setFormData({...formData, dosage: e.target.value})}
+                   className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white"
+                />
+             </div>
+             <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Quantity</label>
+                <input 
+                   required 
+                   type="number" 
+                   value={formData.quantity} 
+                   onChange={e => setFormData({...formData, quantity: Number(e.target.value)})}
+                   className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white"
+                />
+             </div>
+             <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notes</label>
+                <textarea 
+                   rows={3} 
+                   value={formData.notes} 
+                   onChange={e => setFormData({...formData, notes: e.target.value})}
+                   className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none resize-none bg-white text-slate-900 dark:bg-slate-700 dark:text-white"
+                />
+             </div>
+
+             <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-700 mt-4">
+                <button type="button" onClick={onClose} className="px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg">Cancel</button>
+                <button type="submit" className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 shadow-sm">Save Changes</button>
+             </div>
+          </form>
+       </div>
+    </div>
+   );
 };
 
 const InventoryList: React.FC = () => {

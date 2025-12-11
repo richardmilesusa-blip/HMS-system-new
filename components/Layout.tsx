@@ -6,7 +6,7 @@ import { db } from '../services/database';
 import { 
   LayoutDashboard, Users, Calendar, Pill, 
   Stethoscope, Settings, Bell, Search, Menu, LogOut,
-  Hexagon, BedDouble, X, Info, AlertTriangle, CheckCircle, Trash2
+  Hexagon, BedDouble, X, Info, AlertTriangle, CheckCircle, Trash2, Clock
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -149,6 +149,7 @@ export const Layout: React.FC<LayoutProps> = ({ currentView, onNavigate, onLogou
            <RenderNavItem view="PATIENTS" label="Patients & EMR" icon={Users} />
            <RenderNavItem view="BEDS" label="Bed Management" icon={BedDouble} />
            <RenderNavItem view="APPOINTMENTS" label="Appointments" icon={Calendar} />
+           <RenderNavItem view="ROSTER" label="Staff Roster" icon={Clock} />
            <RenderNavItem view="PHARMACY" label="Pharmacy" icon={Pill} />
            <RenderNavItem view="CLINICAL_AI" label="Clinical AI" icon={Stethoscope} />
            

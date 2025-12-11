@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../services/database';
 import { User, AuditLog, UserRole } from '../types';
+import { hasPermission } from '../utils/permissions';
 import { Users, Shield, Activity, Settings, Plus, Search, Lock, UserCheck, UserX, FileText, Key, Moon, Sun, Monitor, AlertCircle, Bell } from 'lucide-react';
 
 export const SystemAdmin: React.FC = () => {
@@ -44,7 +45,7 @@ const UserManagement: React.FC = () => {
 
   // RBAC Check
   const currentUser = db.getCurrentUser();
-  const isAdmin = currentUser.role === UserRole.ADMIN;
+  const canManageUsers = hasPermission(currentUser.role, 'MANAGE_USERS');
 
   const refreshUsers = () => {
     setUsers(db.getUsers());
@@ -55,7 +56,7 @@ const UserManagement: React.FC = () => {
   }, []);
 
   const toggleStatus = (user: User) => {
-    if (!isAdmin) return;
+    if (!canManageUsers) return;
     const newStatus = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
     db.updateUserStatus(user.id, newStatus);
     refreshUsers();
@@ -69,7 +70,7 @@ const UserManagement: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col">
-       {!isAdmin && (
+       {!canManageUsers && (
          <div className="bg-yellow-50 dark:bg-yellow-900/20 px-4 py-2 border-b border-yellow-100 dark:border-yellow-900/50 text-xs text-yellow-700 dark:text-yellow-400 flex items-center gap-2">
             <Lock size={12} />
             You are viewing this module in Read-Only mode. Administrative actions are restricted.
@@ -87,7 +88,7 @@ const UserManagement: React.FC = () => {
                onChange={(e) => setSearchTerm(e.target.value)}
              />
           </div>
-          {isAdmin && (
+          {canManageUsers && (
             <button 
                 onClick={() => setShowAddModal(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-sm font-medium shadow-sm transition-colors"
@@ -136,7 +137,7 @@ const UserManagement: React.FC = () => {
                        {user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never'}
                     </td>
                     <td className="p-4 text-right">
-                       {isAdmin ? (
+                       {canManageUsers ? (
                            <div className="flex justify-end gap-2">
                                 <button 
                                     onClick={() => setPasswordModalUser(user)}

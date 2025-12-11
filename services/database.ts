@@ -1,6 +1,5 @@
 
-
-import { Patient, Doctor, PatientStatus, UserRole, AppState, Ward, Bed, BedStatus, Appointment, AppointmentStatus, Medication, Prescription, PrescriptionStatus, User, AuditLog } from '../types';
+import { Patient, Doctor, PatientStatus, UserRole, AppState, Ward, Bed, BedStatus, Appointment, AppointmentStatus, Medication, Prescription, PrescriptionStatus, User, AuditLog, ProgressNote, TreatmentPlan, Vitals, Shift } from '../types';
 
 const STORAGE_KEY = 'NEXUS_HMS_DB_V2';
 
@@ -20,13 +19,26 @@ const SEED_PATIENTS: Patient[] = [
     bedId: 'B-304-A',
     admissionDate: '2023-10-25T10:00:00',
     vitalsHistory: [
-      { date: '2023-10-26T08:00', heartRate: 78, bpSystolic: 135, bpDiastolic: 85, temperature: 37.1, spo2: 98, respRate: 16 },
-      { date: '2023-10-25T08:00', heartRate: 82, bpSystolic: 140, bpDiastolic: 88, temperature: 37.2, spo2: 97, respRate: 18 }
+      { id: 'V-101', date: '2023-10-26T08:00', heartRate: 78, bpSystolic: 135, bpDiastolic: 85, temperature: 37.1, spo2: 98, respRate: 16, recordedBy: 'Nurse Joy' },
+      { id: 'V-102', date: '2023-10-25T08:00', heartRate: 82, bpSystolic: 140, bpDiastolic: 88, temperature: 37.2, spo2: 97, respRate: 18, recordedBy: 'Nurse Joy' }
     ],
     labResults: [
       { id: 'L-501', testName: 'Complete Blood Count', date: '2023-10-25', status: 'COMPLETED', result: 'WBC 11.5 (High)', flag: 'ABNORMAL' },
       { id: 'L-502', testName: 'Lipid Panel', date: '2023-10-25', status: 'PENDING' }
-    ]
+    ],
+    progressNotes: [
+      { id: 'N-1', date: '2023-10-26T09:00', authorId: 'D-001', authorName: 'Dr. Gregory House', authorRole: 'DOCTOR', content: 'Patient stable. Blood sugar levels are still fluctuating. Adjusted insulin dosage.', type: 'PHYSICIAN' },
+      { id: 'N-2', date: '2023-10-26T08:15', authorId: 'U-003', authorName: 'Nurse Joy', authorRole: 'NURSE', content: 'Morning vitals taken. Patient complains of mild headache.', type: 'NURSING' }
+    ],
+    treatmentPlan: {
+      id: 'TP-1',
+      startDate: '2023-10-25',
+      diagnosis: 'Type 2 Diabetes with Hypertension',
+      goals: ['Stabilize Glucose < 120', 'Reduce BP to 120/80'],
+      instructions: 'Monitor blood sugar every 4 hours. Low sodium diet.',
+      active: true,
+      lastUpdated: '2023-10-26'
+    }
   },
   {
     id: 'P-1002',
@@ -42,9 +54,21 @@ const SEED_PATIENTS: Patient[] = [
     bedId: 'B-ER-1',
     admissionDate: '2023-10-27T02:30:00',
     vitalsHistory: [
-      { date: '2023-10-27T02:35', heartRate: 110, bpSystolic: 90, bpDiastolic: 60, temperature: 36.5, spo2: 94, respRate: 22, flag: 'CRITICAL' }
+      { id: 'V-201', date: '2023-10-27T02:35', heartRate: 110, bpSystolic: 90, bpDiastolic: 60, temperature: 36.5, spo2: 94, respRate: 22, flag: 'CRITICAL', recordedBy: 'Dr. Stephen Strange' }
     ],
-    labResults: []
+    labResults: [],
+    progressNotes: [
+      { id: 'N-3', date: '2023-10-27T02:40', authorId: 'D-002', authorName: 'Dr. Stephen Strange', authorRole: 'DOCTOR', content: 'Patient admitted via ER with multiple lacerations. Hemorrhage controlled. Sutures applied.', type: 'EMERGENCY' }
+    ],
+    treatmentPlan: {
+      id: 'TP-2',
+      startDate: '2023-10-27',
+      diagnosis: 'Traumatic Injury',
+      goals: ['Pain Management', 'Infection Prevention'],
+      instructions: 'IV Fluids, Antibiotics prophylaxis. Monitor wound drainage.',
+      active: true,
+      lastUpdated: '2023-10-27'
+    }
   },
   {
     id: 'P-1003',
@@ -57,9 +81,10 @@ const SEED_PATIENTS: Patient[] = [
     allergies: ['Peanuts', 'Latex'],
     diagnosis: ['Seasonal Allergies', 'Mild Asthma'],
     vitalsHistory: [
-      { date: '2023-10-20T14:00', heartRate: 72, bpSystolic: 118, bpDiastolic: 75, temperature: 36.8, spo2: 99, respRate: 14 }
+      { id: 'V-301', date: '2023-10-20T14:00', heartRate: 72, bpSystolic: 118, bpDiastolic: 75, temperature: 36.8, spo2: 99, respRate: 14 }
     ],
-    labResults: []
+    labResults: [],
+    progressNotes: []
   }
 ];
 
@@ -129,6 +154,13 @@ const SEED_APPOINTMENTS: Appointment[] = [
   }
 ];
 
+const SEED_SHIFTS: Shift[] = [
+    { id: 'S-1', userId: 'U-002', userName: 'Dr. Gregory House', userRole: UserRole.DOCTOR, date: today, startTime: '08:00', endTime: '16:00', type: 'DAY', location: 'General Ward' },
+    { id: 'S-2', userId: 'U-003', userName: 'Nurse Joy', userRole: UserRole.NURSE, date: today, startTime: '07:00', endTime: '19:00', type: 'DAY', location: 'ICU' },
+    { id: 'S-3', userId: 'U-002', userName: 'Dr. Gregory House', userRole: UserRole.DOCTOR, date: new Date(Date.now() + 86400000).toISOString().split('T')[0], startTime: '08:00', endTime: '16:00', type: 'DAY', location: 'General Ward' },
+    { id: 'S-4', userId: 'U-003', userName: 'Nurse Joy', userRole: UserRole.NURSE, date: new Date(Date.now() + 86400000).toISOString().split('T')[0], startTime: '07:00', endTime: '19:00', type: 'DAY', location: 'ER' },
+];
+
 const SEED_MEDICATIONS: Medication[] = [
   { 
     id: 'M-101', name: 'Paracetamol', genericName: 'Acetaminophen', type: 'TABLET', strength: '500mg', 
@@ -173,7 +205,10 @@ const SEED_USERS: User[] = [
   { id: 'U-001', name: 'Admin User', email: 'admin@nexus.hms', role: UserRole.ADMIN, status: 'ACTIVE', lastLogin: new Date().toISOString(), password: 'password123' },
   { id: 'U-002', name: 'Dr. Gregory House', email: 'house@nexus.hms', role: UserRole.DOCTOR, status: 'ACTIVE', lastLogin: '2023-10-26T14:20:00', password: 'password123' },
   { id: 'U-003', name: 'Nurse Joy', email: 'joy@nexus.hms', role: UserRole.NURSE, status: 'ACTIVE', lastLogin: '2023-10-27T07:00:00', password: 'password123' },
-  { id: 'U-004', name: 'Receptionist Pam', email: 'pam@nexus.hms', role: UserRole.RECEPTIONIST, status: 'ACTIVE', lastLogin: '2023-10-27T08:00:00', password: 'password123' }
+  { id: 'U-004', name: 'Receptionist Pam', email: 'pam@nexus.hms', role: UserRole.RECEPTIONIST, status: 'ACTIVE', lastLogin: '2023-10-27T08:00:00', password: 'password123' },
+  // Converted Clerk to Receptionist
+  { id: 'U-005', name: 'Clerk Kent', email: 'clerk@nexus.hms', role: UserRole.RECEPTIONIST, status: 'ACTIVE', lastLogin: '2023-10-27T08:15:00', password: 'password123' },
+  { id: 'U-006', name: 'Recorda Lee', email: 'records@nexus.hms', role: UserRole.MEDICAL_RECORDS, status: 'ACTIVE', lastLogin: '2023-10-27T08:30:00', password: 'password123' }
 ];
 
 const SEED_LOGS: AuditLog[] = [
@@ -195,8 +230,38 @@ class DatabaseService {
       const parsed = JSON.parse(stored);
       // Ensure new fields exist for legacy data
       if (!parsed.users) parsed.users = SEED_USERS;
+      if (!parsed.shifts) parsed.shifts = SEED_SHIFTS;
+      
+      // Ensure patients have progressNote array
+      if (parsed.patients) {
+         parsed.patients.forEach((p: any) => {
+             if (!p.progressNotes) p.progressNotes = [];
+             // Ensure vitals have IDs (migration for legacy data)
+             if (p.vitalsHistory) {
+                 p.vitalsHistory.forEach((v: any, index: number) => {
+                     if (!v.id) v.id = `V-LEGACY-${index}`;
+                 });
+             }
+         });
+      }
+
+      // Migration: Convert CLERK to RECEPTIONIST
+      if (parsed.users) {
+         parsed.users.forEach((u: any) => {
+             // We check against string 'CLERK' because it might be in localStorage from previous versions
+             if (u.role === 'CLERK') u.role = UserRole.RECEPTIONIST;
+         });
+      }
+
+      const existingIds = new Set(parsed.users.map((u: User) => u.id));
+      SEED_USERS.forEach(seedUser => {
+          if (!existingIds.has(seedUser.id)) {
+              parsed.users.push(seedUser);
+          }
+      });
+
       if (!parsed.auditLogs) parsed.auditLogs = SEED_LOGS;
-      if (!parsed.currentUser.id) parsed.currentUser.id = 'U-001';
+      if (!parsed.currentUser?.id) parsed.currentUser = { id: 'U-001', name: 'Admin User', role: UserRole.ADMIN };
       return parsed;
     }
     const initialState: AppState = {
@@ -205,6 +270,7 @@ class DatabaseService {
       wards: SEED_WARDS,
       beds: SEED_BEDS,
       appointments: SEED_APPOINTMENTS,
+      shifts: SEED_SHIFTS,
       medications: SEED_MEDICATIONS,
       prescriptions: SEED_PRESCRIPTIONS,
       users: SEED_USERS,
@@ -248,6 +314,48 @@ class DatabaseService {
     }
   }
 
+  addProgressNote(patientId: string, note: ProgressNote): void {
+     const patient = this.getPatientById(patientId);
+     if (patient) {
+         const updatedPatient = { ...patient, progressNotes: [note, ...(patient.progressNotes || [])] };
+         this.updatePatient(updatedPatient);
+         this.logAction('ADD_NOTE', `Added note to patient ${patientId}`, 'EMR');
+     }
+  }
+
+  addVitals(patientId: string, vitals: Vitals): void {
+     const patient = this.getPatientById(patientId);
+     if (patient) {
+         const newVitals = { ...vitals, id: `V-${Date.now()}` };
+         const updatedPatient = { ...patient, vitalsHistory: [newVitals, ...(patient.vitalsHistory || [])] };
+         this.updatePatient(updatedPatient);
+         this.logAction('ADD_VITALS', `Recorded vitals for patient ${patientId}`, 'CLINICAL');
+     }
+  }
+
+  updateVitals(patientId: string, vitals: Vitals): void {
+    const patient = this.getPatientById(patientId);
+    if (patient && patient.vitalsHistory && vitals.id) {
+        const index = patient.vitalsHistory.findIndex(v => v.id === vitals.id);
+        if (index !== -1) {
+            const newHistory = [...patient.vitalsHistory];
+            newHistory[index] = vitals;
+            const updatedPatient = { ...patient, vitalsHistory: newHistory };
+            this.updatePatient(updatedPatient);
+            this.logAction('UPDATE_VITALS', `Updated vitals ${vitals.id} for patient ${patientId}`, 'CLINICAL');
+        }
+    }
+  }
+
+  updateTreatmentPlan(patientId: string, plan: TreatmentPlan): void {
+     const patient = this.getPatientById(patientId);
+     if (patient) {
+         const updatedPatient = { ...patient, treatmentPlan: plan };
+         this.updatePatient(updatedPatient);
+         this.logAction('UPDATE_PLAN', `Updated treatment plan for ${patientId}`, 'EMR');
+     }
+  }
+
   // --- Bed & Ward Methods ---
 
   getWards(): Ward[] {
@@ -280,7 +388,6 @@ class DatabaseService {
     const bed = this.getBedById(bedId);
     
     if (patient && bed) {
-      // If patient already in a bed, empty that bed
       if (patient.bedId) {
         const oldBed = this.getBedById(patient.bedId);
         if (oldBed) {
@@ -288,18 +395,15 @@ class DatabaseService {
         }
       }
 
-      // Update new Bed
       const updatedBed: Bed = { ...bed, status: 'OCCUPIED', patientId: patient.id };
       
-      // Update Patient
       const updatedPatient: Patient = { 
         ...patient, 
         bedId: bed.id, 
         roomNumber: bed.roomNumber,
-        status: PatientStatus.ADMITTED // Auto admit
+        status: PatientStatus.ADMITTED 
       };
 
-      // Atomic-ish update
       const newBeds = this.state.beds.map(b => b.id === bedId ? updatedBed : (b.id === patient.bedId ? { ...b, status: 'CLEANING' as BedStatus, patientId: undefined } : b));
       const newPatients = this.state.patients.map(p => p.id === patientId ? updatedPatient : p);
 
@@ -355,7 +459,6 @@ class DatabaseService {
       const apptStart = new Date(`${appt.date}T${appt.time}`).getTime();
       const apptEnd = apptStart + appt.duration * 60000;
 
-      // Check overlap: (StartA < EndB) and (EndA > StartB)
       return (newStart < apptEnd && newEnd > apptStart);
     });
   }
@@ -378,6 +481,27 @@ class DatabaseService {
        newList[index] = appt;
        this.saveState({ ...this.state, appointments: newList });
     }
+  }
+
+  // --- Roster/Shift Methods ---
+
+  getShifts(): Shift[] {
+    return this.state.shifts || [];
+  }
+
+  addShift(shift: Shift): void {
+    const newState = { ...this.state, shifts: [...(this.state.shifts || []), shift] };
+    this.logAction('ADD_SHIFT', `Added shift for ${shift.userName} on ${shift.date}`, 'ROSTER');
+    this.saveState(newState);
+  }
+
+  deleteShift(shiftId: string): void {
+    const shift = this.state.shifts.find(s => s.id === shiftId);
+    if (!shift) return;
+    
+    const newState = { ...this.state, shifts: this.state.shifts.filter(s => s.id !== shiftId) };
+    this.logAction('DELETE_SHIFT', `Removed shift for ${shift.userName} on ${shift.date}`, 'ROSTER');
+    this.saveState(newState);
   }
 
   // --- Pharmacy Methods ---
@@ -411,6 +535,17 @@ class DatabaseService {
     this.saveState(newState);
   }
 
+  updatePrescription(prescription: Prescription): void {
+    const prescriptions = this.state.prescriptions || [];
+    const index = prescriptions.findIndex(p => p.id === prescription.id);
+    if (index !== -1) {
+      const newPrescriptions = [...prescriptions];
+      newPrescriptions[index] = prescription;
+      this.logAction('UPDATE_RX', `Updated prescription ${prescription.id}`, 'PHARMACY');
+      this.saveState({ ...this.state, prescriptions: newPrescriptions });
+    }
+  }
+
   dispensePrescription(id: string): { success: boolean, message: string } {
     const prescriptions = this.state.prescriptions || [];
     const meds = this.state.medications || [];
@@ -429,7 +564,6 @@ class DatabaseService {
       return { success: false, message: `Insufficient stock. Required: ${prescription.quantity}, Available: ${med.stock}` };
     }
 
-    // Process Transaction
     const newMeds = [...meds];
     newMeds[mIndex] = { ...med, stock: med.stock - prescription.quantity };
 
@@ -512,9 +646,7 @@ class DatabaseService {
   private refreshSystemAlerts() {
     const alerts: Array<{id: string, message: string, type: 'info'|'warning'|'error', read: boolean}> = [];
     
-    // 1. Bed Capacity Alert
     const availableBeds = this.state.beds.filter(b => b.status === 'AVAILABLE').length;
-    const totalBeds = this.state.beds.length;
     if (availableBeds < 3) {
       alerts.push({ 
         id: 'SYS_ALERT_BEDS_CRITICAL', 
@@ -531,7 +663,6 @@ class DatabaseService {
       });
     }
 
-    // 2. Low Stock Alert
     const lowStockMeds = this.state.medications.filter(m => m.stock <= m.reorderLevel);
     if (lowStockMeds.length > 0) {
       alerts.push({ 
@@ -542,7 +673,6 @@ class DatabaseService {
       });
     }
 
-    // 3. Critical Patients Alert
     const criticalPatients = this.state.patients.filter(p => p.vitalsHistory[0]?.flag === 'CRITICAL');
     if (criticalPatients.length > 0) {
        alerts.push({ 
@@ -553,13 +683,11 @@ class DatabaseService {
        });
     }
 
-    // Merge alerts: retain existing user notifications, but upsert system alerts
     let currentNotifications = this.state.notifications || [];
     
     alerts.forEach(alert => {
        const exists = currentNotifications.some(n => n.id === alert.id);
        if (!exists) {
-          // If condition is met and not in list, add it to the TOP
           currentNotifications = [alert, ...currentNotifications];
        }
     });
@@ -569,7 +697,7 @@ class DatabaseService {
        if (n.id.startsWith('SYS_ALERT_')) {
           return activeAlertIds.has(n.id);
        }
-       return true; // Keep manual/other notifications
+       return true; 
     });
 
     this.state.notifications = currentNotifications;
@@ -585,7 +713,6 @@ class DatabaseService {
       details,
       module
     };
-    // Keep only last 100 logs
     const newLogs = [newLog, ...(this.state.auditLogs || [])].slice(0, 100);
     this.state.auditLogs = newLogs; 
   }
@@ -598,7 +725,6 @@ class DatabaseService {
     const emergency = this.state.patients.filter(p => p.status === PatientStatus.EMERGENCY).length;
     const critical = this.state.patients.filter(p => p.vitalsHistory[0]?.flag === 'CRITICAL').length || 0; 
     
-    // Calculate Occupancy
     const totalBeds = this.state.beds.length;
     const occupiedBeds = this.state.beds.filter(b => b.status === 'OCCUPIED').length;
     const occupancyRate = totalBeds > 0 ? Math.round((occupiedBeds / totalBeds) * 100) : 0;

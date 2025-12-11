@@ -5,6 +5,7 @@ import { Dashboard } from './components/Dashboard';
 import { PatientModule } from './components/PatientModule';
 import { BedManagement } from './components/BedManagement';
 import { AppointmentScheduler } from './components/AppointmentScheduler';
+import { RosterModule } from './components/RosterModule';
 import { PharmacyModule } from './components/PharmacyModule';
 import { ClinicalSupport } from './components/ClinicalSupport';
 import { SystemAdmin } from './components/SystemAdmin';
@@ -76,6 +77,8 @@ const App: React.FC = () => {
         return <BedManagement />;
       case 'APPOINTMENTS':
         return <AppointmentScheduler />;
+      case 'ROSTER':
+        return <RosterModule />;
       case 'PHARMACY':
         return <PharmacyModule />;
       case 'CLINICAL_AI':
